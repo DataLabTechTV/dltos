@@ -14,3 +14,5 @@ dnf5 -y install lazygit
 dnf5 -y copr disable dejan/lazygit
 
 go install github.com/gohugoio/hugo@v0.111.3
+
+dnf5 -y --enable-repo=terra install zed
