@@ -10,4 +10,5 @@ mv /usr/bin/docker /usr/bin/docker.real
 mv /usr/bin/docker-compose /usr/bin/docker-compose.real
 
 go install github.com/jesseduffield/lazydocker@latest
+
 go install github.com/sigstore/cosign/v3/cmd/cosign@latest
