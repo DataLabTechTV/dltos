@@ -3,10 +3,10 @@
 set -euxo pipefail
 
 # shellcheck source=go-env.sh
-source "$(dirname "${BASH_SOURCE[0]}")/go-env.sh"
+. "$(dirname "${BASH_SOURCE[0]}")/go-env.sh"
 
 # shellcheck source=cargo-env.sh
-source "$(dirname "${BASH_SOURCE[0]}")/cargo-env.sh"
+. "$(dirname "${BASH_SOURCE[0]}")/cargo-env.sh"
 
 # --- Go ---
 dnf5 -y install golang delve gopls golangci-lint

@@ -3,7 +3,7 @@
 set -euxo pipefail
 
 # shellcheck source=go-env.sh
-source "$(dirname "${BASH_SOURCE[0]}")/go-env.sh"
+. "$(dirname "${BASH_SOURCE[0]}")/go-env.sh"
 
 dnf5 -y install docker-cli docker-compose-switch
 mv /usr/bin/docker /usr/bin/docker.real
