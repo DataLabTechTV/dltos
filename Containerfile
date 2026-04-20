@@ -20,7 +20,7 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
   --mount=type=cache,dst=/var/cache \
   --mount=type=cache,dst=/var/log \
   --mount=type=tmpfs,dst=/tmp \
-  /ctx/90-kernel.sh && \
+  /ctx/90-initramfs.sh && \
   /ctx/99-validations.sh
 
 RUN bootc container lint
