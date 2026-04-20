@@ -65,8 +65,8 @@ jobs:
           tags: |
             type=raw,value=${{ env.DEFAULT_TAG }},enable=${{ github.ref == 'refs/heads/main' }}
             type=raw,value=${{ env.DEFAULT_TAG }}.{{date 'YYYYMMDD'}},enable=${{ github.ref == 'refs/heads/main' }}
-            type=raw,value=${{ env.BRANCH_TAG }},enable=${{ github.ref != 'refs/heads/main' }}
-            type=raw,value=${{ env.BRANCH_TAG }}.{{date 'YYYYMMDD'}},enable=${{ github.ref != 'refs/heads/main' }}
+            type=raw,value=${{ env.GITHUB_REF_NAME }},enable=${{ github.ref != 'refs/heads/main' }}
+            type=raw,value=${{ env.GITHUB_REF_NAME }}.{{date 'YYYYMMDD'}},enable=${{ github.ref != 'refs/heads/main' }}
             type=raw,value={{date 'YYYYMMDD'}}
             type=sha,enable=${{ github.event_name == 'pull_request' }}
             type=ref,event=pr
