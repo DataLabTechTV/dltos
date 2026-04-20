@@ -40,18 +40,26 @@ sudo bootc upgrade
 
 ## Features
 
-- Preconfigured niri out-of-the-box, with the noctalia shell.
-- Go, Rust, Python, and Node tooling, providing `go`, `cargo`, `uv`,  and`npm`.
-- System-wide tools, installed via `dnf5`, `go install`, `cargo install`, or `uv tool install`, making it easy to naturally extend if you want to derive your custom image.
+- Preconfigured niri out-of-the-box, with the noctalia shell, on the custom bootc image.
+- Go, Rust, Python, and Node tooling, providing `go`, `cargo`, `uv`,  and`npm`, through a bundled distrobox config.
+- System-wide tools, installed via `dnf5`, `go install`, `cargo install`, or `uv tool install`, making it easy to naturally extend, if you need to add to the bundled distrobox config, while keeping your home clean.
 
-The following sections summarize the packages that DLT OS provides out-of-the-box.
+The following sections summarize the packages that DLT OS provides out-of-the-box, where [Base](#base) refers to the custom bootc image, while everything else is shipped as a distrobox config under `/etc/distrobox/dltos.ini`, which you can use by running the following commands:
+
+```bash
+distrobox assemble create --file /etc/distrobox/dltos.ini
+distrobox enter dltos
+```
 
 ### Base
 
-For the base system, we add `niri` and `noctalia-shell`, alongside a few utilities. We also remove `xwaylandvideobridge`, which opens a blank window by default on niri, but seems to be deprecated anyway. This let's us run the `xwayland-satellite` integration without issues.
+For the base system, defined in the custom bootc image, we add `niri` and `noctalia-shell`, alongside a few utilities. We also remove `xwaylandvideobridge`, which opens a blank window by default on niri, but seems to be deprecated anyway. This let's us run the `xwayland-satellite` integration without issues.
 
 | Package                    | Version  | Via    | Observation                                                                 |
 | -------------------------- | -------- | ------ | --------------------------------------------------------------------------- |
+| `niri` | >= 25.11 | `dnf5` | niri compositor |
+| `noctalia-shell` | >= 4.7.6 | `dnf5` | Noctalia shell (bar and panels). |
+| `niri-float-sticky` | >= 0.0.8 | `go` | Utility to keep a window visible on all workspaces. |
 | `xdg-desktop-portal-gnome` | >=49.0   | `dnf5` | Required for the *Screen Capture (PipeWire)* feature on OBS.                |
 | `qt6ct`                    | >=0.11   | `dnf5` | Let's you pick the Qt theme without using KDE utilities.                    |
 | `wev`                      | >=1.1.0  | `dnf5` | Keyboard and mouse event debugging utility.                                 |
@@ -71,7 +79,7 @@ org.freedesktop.impl.portal.ScreenCast=gnome
 org.freedesktop.impl.portal.Screenshot=gnome
 ```
 
- Please also notice that the `xdg-desktop-portal-gnome` package has been bugged since 2022. When adding multiple capture sources, or reselecting the window for the source, it will not respond correctly. Follow their [#40](https://gitlab.gnome.org/GNOME/xdg-desktop-portal-gnome/-/issues/40) issue about this problem.
+ Please also notice that the `xdg-desktop-portal-gnome` package has been bugged since 2022. When adding multiple capture sources, or re-selecting the window for the source, it will not respond correctly. Follow their [#40](https://gitlab.gnome.org/GNOME/xdg-desktop-portal-gnome/-/issues/40) issue about this problem.
 
 #### Qt Theming
 
