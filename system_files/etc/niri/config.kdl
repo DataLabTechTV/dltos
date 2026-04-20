@@ -217,7 +217,7 @@ binds {
   Mod+Period repeat=false { spawn "qs" "-c" "noctalia-shell" "ipc" "call" "launcher" "emoji"; }
 
   // --- Apps ---
-  Mod+Return cooldown-ms=500 { spawn "kitty" "-d" "~" "/bin/fish" "-l"; }
+  Mod+Return cooldown-ms=500 { spawn "kitty" "-d" "~"; }
   Mod+Shift+Return cooldown-ms=500 { spawn "konsole"; }
 
   // --- Screenshots ---
