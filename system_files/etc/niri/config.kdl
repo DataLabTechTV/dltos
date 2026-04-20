@@ -1,7 +1,7 @@
 spawn-at-startup "/usr/libexec/pam_kwallet_init"
 spawn-at-startup "systemctl" "--user" "import-environment" "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP"
 spawn-at-startup "dbus-update-activation-environment" "--systemd" "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP=niri"
-spawn-at-startup "niri-float-sticky" "-title" "Picture-in-picture"
+spawn-at-startup "niri-float-sticky" "-title" "Picture in picture"
 spawn-at-startup "qs" "-c" "noctalia-shell"
 
 screenshot-path "~/Pictures/Screenshots/Screenshot_%Y%m%d_%H%M%S.png"
@@ -47,6 +47,16 @@ layout {
   }
 }
 
+recent-windows {
+  previews {
+    max-height 200
+  }
+
+  highlight {
+    corner-radius 16
+  }
+}
+
 gestures {
   hot-corners {
     off
@@ -73,8 +83,9 @@ window-rule {
 // --- Fixes ---
 
 window-rule {
-  match title="^Picture-in-picture$"
+  match title="^Picture in picture$"
   open-floating true
+  open-focused false
   default-column-width { fixed 480; }
   default-window-height { fixed 270; }
   default-floating-position x=16 y=16 relative-to="bottom-right"
@@ -83,6 +94,7 @@ window-rule {
 window-rule {
   match app-id="steam" title=r#"^notificationtoasts_\d+_desktop$"#
   default-floating-position x=-266 y=16 relative-to="top-right"
+  open-focused false
 }
 
 window-rule {
@@ -91,6 +103,16 @@ window-rule {
 }
 
 // --- App Specific ---
+
+window-rule {
+  match app-id="kitty"
+  default-column-width { proportion 0.66667; }
+}
+
+window-rule {
+  match app-id="org.kde.konsole"
+  default-column-width { proportion 0.66667; }
+}
 
 window-rule {
   match app-id="brave-browser"
@@ -113,13 +135,35 @@ window-rule {
 }
 
 window-rule {
+  match app-id="dev.zed.Zed"
+  open-maximized true
+}
+
+window-rule {
+  match app-id="dev.zed.Zed" title="^Zed — Settings$"
+  open-floating true
+}
+
+window-rule {
   match app-id="code"
+  open-maximized true
+}
+
+window-rule {
+  match app-id="org.gimp.GIMP"
   open-maximized true
 }
 
 window-rule {
   match app-id="org.inkscape.Inkscape"
   open-maximized true
+}
+
+window-rule {
+  match app-id="org.kde.kcalc"
+  open-floating true
+  default-column-width { fixed 300; }
+  default-window-height { fixed 420; }
 }
 
 window-rule {
@@ -145,11 +189,6 @@ window-rule {
 window-rule {
   match app-id="com.obsproject.Studio"
   open-maximized true
-}
-
-window-rule {
-  match app-id="kitty"
-  default-column-width { proportion 0.66667; }
 }
 
 window-rule {
