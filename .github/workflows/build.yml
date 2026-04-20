@@ -63,11 +63,11 @@ jobs:
         id: metadata
         with:
           tags: |
-            type=raw,value=${{ env.DEFAULT_TAG }},enable=${{ github.ref == 'refs/heads/main' }}
-            type=raw,value=${{ env.DEFAULT_TAG }}.{{date 'YYYYMMDD'}},enable=${{ github.ref == 'refs/heads/main' }}
-            type=raw,value=${{ github.ref_name }},enable=${{ github.ref != 'refs/heads/main' }}
-            type=raw,value=${{ github.ref_name }}.{{date 'YYYYMMDD'}},enable=${{ github.ref != 'refs/heads/main' }}
-            type=raw,value={{date 'YYYYMMDD'}}
+            type=raw,value=${{ env.DEFAULT_TAG }},enable=${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+            type=raw,value=${{ env.DEFAULT_TAG }}.{{date 'YYYYMMDD'}},enable=${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+            type=raw,value=${{ github.ref_name }},enable=${{ github.ref != format('refs/heads/{0}', github.event.repository.default_branch) }}
+            type=raw,value=${{ github.ref_name }}.{{date 'YYYYMMDD'}},enable=${{ github.ref != format('refs/heads/{0}', github.event.repository.default_branch) }}
+            type=raw,value={{date 'YYYYMMDD'}},enable=${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
             type=sha,enable=${{ github.event_name == 'pull_request' }}
             type=ref,event=pr
           labels: |
@@ -143,7 +143,7 @@ jobs:
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
-        if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+        if: github.event_name != 'pull_request' && (github.ref == format('refs/heads/{0}', github.event.repository.default_branch) || github.ref == 'refs/heads/testing')
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
