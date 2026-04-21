@@ -7,4 +7,6 @@ DLTOS_DIR="$(dirname "${BASH_SOURCE[0]}")/dltos"
 
 . $DLTOS_DIR/uv-env.sh
 
+dnf5 -y install uv
+
 uv tool install ramalama
