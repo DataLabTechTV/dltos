@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
-DLTOS_DIR="$(readlink -f $(dirname "${BASH_SOURCE[0]}")/../system_files/usr/share/dltos)"
+set -euxo pipefail
+
+# Copy of system_files/usr/share/dltos
+DLTOS_DIR="$(dirname "${BASH_SOURCE[0]}")/dltos"
 
 . $DLTOS_DIR/uv-env.sh
 
