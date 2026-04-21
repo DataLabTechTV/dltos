@@ -46,7 +46,7 @@ install_container_tools() {
 }
 
 install_ai_tools() {
-	exists ramalama || uv tool install ramalama
+	exists ramalama || ln -s /usr/bin/distrobox-host-exec /usr/local/bin/ramalama
 }
 
 install_data_tools() {
