@@ -2,6 +2,8 @@
 
 set -euxo pipefail
 
+dnf5 clean all
+
 dnf5 -y remove xwaylandvideobridge
 dnf5 -y install kitty
 dnf5 -y install xdg-desktop-portal-gnome qt6ct
