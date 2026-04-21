@@ -10,7 +10,8 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
   --mount=type=cache,dst=/var/cache \
   --mount=type=cache,dst=/var/log \
   --mount=type=tmpfs,dst=/tmp \
-  /ctx/00-base.sh
+  /ctx/00-base.sh && \
+  /ctx/10-tooling.sh
 
 COPY --from=go_builder /go/bin/niri-float-sticky /usr/bin/niri-float-sticky
 
