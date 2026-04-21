@@ -2,8 +2,6 @@
 
 set -euxo pipefail
 
-export SHELL=/usr/bin/fish
-
 dnf5 -y install distribution-gpg-keys
 rpm --import \
 	/usr/share/distribution-gpg-keys/rpmfusion/RPM-GPG-KEY-rpmfusion-free-fedora-$(rpm -E %fedora) \
