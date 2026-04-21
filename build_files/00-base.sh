@@ -3,8 +3,7 @@
 set -euxo pipefail
 
 rpm --import https://repos.fyralabs.com/terra$(rpm -E %fedora)/key.asc
-dnf5 -y --repofrompath 'terra,https://repos.fyralabs.com/terra$releasever' install terra-release
-dnf5 -y makecache
+dnf5 -y --repofrompath 'terra-repo,https://repos.fyralabs.com/terra$releasever' install terra-release
 
 dnf5 -y remove xwaylandvideobridge
 dnf5 -y install kitty
