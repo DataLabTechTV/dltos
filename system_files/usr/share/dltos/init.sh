@@ -56,6 +56,10 @@ install_data_tools() {
 	exists vd || uv tool install visidata
 }
 
+install_gaming_tools() {
+	exists gamescope || ln -s /usr/bin/distrobox-host-exec /usr/local/bin/gamescope
+}
+
 install_language_tools &&
 	install_shell_tools &&
 	install_network_tools &&
@@ -63,4 +67,5 @@ install_language_tools &&
 	install_dev_tools &&
 	install_container_tools &&
 	install_ai_tools &&
-	install_data_tools
+	install_data_tools &&
+	install_gaming_tools
