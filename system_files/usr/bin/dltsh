@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-BOX_NAME="dltos"
+BOX_CONF=/etc/distrobox/dltos.ini
+BOX_NAME=dltos
 
 find_box() {
 	if ! command -v distrobox 2>&1 >/dev/null; then
@@ -10,8 +11,35 @@ find_box() {
 	distrobox list --no-color | awk 'NR > 1 { print $3 }' | grep -qx "$BOX_NAME"
 }
 
+confirm() {
+	if [ $# -ge 1 ]; then
+		msg=$1
+	else
+		msg="Confirm?"
+	fi
+
+	while :; do
+		printf "$msg [Y/n] "
+		IFS= read -r ans
+
+		case $ans in
+		y | Y | yes | YES | Yes | *)
+			return 0
+			;;
+		n | N | no | NO | No)
+			return 1
+			;;
+		esac
+	done
+}
+
 if find_box "$BOX_NAME"; then
 	exec distrobox enter "$BOX_NAME"
 else
-	exec "$SHELL"
+	if confirm "Create and run dltos distrobox?"; then
+		distrobox assemble create --file "$BOX_CONF"
+		exec distrobox enter "$BOX_NAME"
+	else
+		exec "$SHELL"
+	fi
 fi
