@@ -38,6 +38,18 @@ When you need to update your system, you can either do it with `ujust update` or
 sudo bootc upgrade
 ```
 
+### Bundled Distrobox
+
+In order to use the bundled `dltos` distrobox, the recommend approach is to just point your terminal do `/usr/bin/dltsh`, or simply `dltsh`, as it's already in the `PATH`. This script will create the distrobox for you on the first run and it will open it always by default in the future. You'll also be able to fallback to the host `bash`, if anything goes wrong.
+
+So, for example for kitty, just edit `~/.config/kitty/kitty.conf` and set:
+
+```
+shell /usr/bin/dltsh
+```
+
+You can also checkout [DataLabTechTV/dotfiles](https://github.com/DataLabTechTV/dotfiles/blob/main/dot_config/kitty/kitty.conf) for a working example.
+
 ## Features
 
 - Preconfigured niri out-of-the-box, with the noctalia shell, on the custom bootc image.
