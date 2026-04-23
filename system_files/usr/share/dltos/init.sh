@@ -58,6 +58,7 @@ install_data_tools() {
 
 install_gaming_tools() {
 	exists gamescope || ln -s /usr/bin/distrobox-host-exec /usr/local/bin/gamescope
+	exists mangohud || ln -s /usr/bin/distrobox-host-exec /usr/local/bin/mangohud
 }
 
 install_language_tools &&
