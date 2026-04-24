@@ -42,6 +42,7 @@ install_container_tools() {
 	exists podman || ln -s /usr/bin/distrobox-host-exec /usr/local/bin/podman
 	exists buildah || ln -s /usr/bin/distrobox-host-exec /usr/local/bin/buildah
 	exists skopeo || ln -s /usr/bin/distrobox-host-exec /usr/local/bin/skopeo
+	exists bootc || ln -s /usr/bin/distrobox-host-exec /usr/local/bin/bootc
 	exists lazydocker || go install github.com/jesseduffield/lazydocker@latest
 	exists cosign || go install github.com/sigstore/cosign/v3/cmd/cosign@latest
 }
