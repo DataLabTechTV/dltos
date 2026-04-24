@@ -48,6 +48,10 @@ install_container_tools() {
 
 install_ai_tools() {
 	exists ramalama || ln -s /usr/bin/distrobox-host-exec /usr/local/bin/ramalama
+
+	clampdown_url=https://github.com/89luca89/clampdown/releases/download/v0.1/clampdown-linux-amd64
+	clampdown_bin=/usr/local/bin/clampdown
+	exists clampdown || curl -fL $clampdown_url -o $clampdown_bin && chmod +x $clampdown_bin
 }
 
 install_data_tools() {
