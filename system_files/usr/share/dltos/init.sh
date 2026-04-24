@@ -19,6 +19,7 @@ install_language_tools() {
 
 install_shell_tools() {
 	exists witr || go install github.com/pranshuparmar/witr/cmd/witr@latest
+	exists ujust || ln -s /usr/bin/distrobox-host-exec /usr/local/bin/ujust
 }
 
 install_network_tools() {
