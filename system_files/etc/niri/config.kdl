@@ -182,11 +182,6 @@ window-rule {
 }
 
 window-rule {
-  match app-id="vesktop"
-  open-maximized true
-}
-
-window-rule {
   match app-id="com.obsproject.Studio"
   open-maximized true
 }
