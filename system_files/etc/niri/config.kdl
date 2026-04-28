@@ -1,7 +1,7 @@
 spawn-at-startup "/usr/libexec/pam_kwallet_init"
 spawn-at-startup "systemctl" "--user" "import-environment" "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP"
 spawn-at-startup "dbus-update-activation-environment" "--systemd" "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP=niri"
-spawn-at-startup "niri-float-sticky" "-title" "Picture in picture"
+// spawn-at-startup "niri-float-sticky" "-title" "Picture in picture"
 spawn-at-startup "qs" "-c" "noctalia-shell"
 
 screenshot-path "~/Pictures/Screenshots/Screenshot_%Y%m%d_%H%M%S.png"
