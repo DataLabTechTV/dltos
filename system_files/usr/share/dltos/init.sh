@@ -4,13 +4,18 @@ set -euxo pipefail
 
 DLTOS_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
-. $DLTOS_DIR/go-env.sh
-. $DLTOS_DIR/cargo-env.sh
-. $DLTOS_DIR/uv-env.sh
+# shellcheck disable=SC1091
+. "$DLTOS_DIR/go-env.sh"
+
+# shellcheck disable=SC1091
+. "$DLTOS_DIR/cargo-env.sh"
+
+# shellcheck disable=SC1091
+. "$DLTOS_DIR/uv-env.sh"
 
 exists() {
 	[ $# -ge 1 ] || return 1
-	command -v $1 >/dev/null 2>&1
+	command -v "$1" >/dev/null 2>&1
 }
 
 install_language_tools() {
