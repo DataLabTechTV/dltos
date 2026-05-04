@@ -26,6 +26,7 @@ install_shell_tools() {
 	exists witr || go install github.com/pranshuparmar/witr/cmd/witr@latest
 	exists ujust || ln -s /usr/bin/distrobox-host-exec /usr/local/bin/ujust
 	exists rpm-ostree || ln -s /usr/bin/distrobox-host-exec /usr/local/bin/rpm-ostree
+	exists nix || ln -s /usr/bin/distrobox-host-exec /usr/local/bin/nix
 	exists qs || ln -s /usr/bin/distrobox-host-exec /usr/local/bin/qs
 	exists niri || ln -s /usr/bin/distrobox-host-exec /usr/local/bin/niri
 }
@@ -52,6 +53,7 @@ install_container_tools() {
 	exists skopeo || ln -s /usr/bin/distrobox-host-exec /usr/local/bin/skopeo
 	exists lazydocker || go install github.com/jesseduffield/lazydocker@latest
 	exists cosign || go install github.com/sigstore/cosign/v3/cmd/cosign@latest
+	exists firecracker || ln -s /usr/bin/distrobox-host-exec /usr/local/bin/firecracker
 }
 
 install_ai_tools() {
