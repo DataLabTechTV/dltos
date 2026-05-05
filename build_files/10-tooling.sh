@@ -10,7 +10,4 @@ DLTOS_DIR="$(dirname "${BASH_SOURCE[0]}")/dltos"
 
 dnf5 -y install uv firecracker
 
-dnf5 -y install nix nix-daemon
-systemctl enable --now nix-daemon.socket
-
 uv tool install ramalama
