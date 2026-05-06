@@ -62,6 +62,36 @@ gestures {
   }
 }
 
+blur {
+  passes 4
+  noise 0
+  offset 2
+}
+
+
+// ------------------------------------
+// Layer Rules
+// ------------------------------------
+
+layer-rule {
+  background-effect {
+    xray false
+  }
+}
+
+layer-rule {
+  match namespace="^noctalia-(|launcher-overlay|dock)-.*$"
+  opacity 0.85
+  background-effect {
+    blur true
+  }
+}
+
+layer-rule {
+  match namespace="^noctalia-overview*"
+  place-within-backdrop true
+}
+
 
 // ------------------------------------
 // Window Rules
@@ -72,6 +102,10 @@ gestures {
 window-rule {
   geometry-corner-radius 16
   clip-to-geometry true
+
+  background-effect {
+    xray false
+  }
 }
 
 window-rule {
@@ -111,6 +145,9 @@ window-rule {
 window-rule {
   match app-id="kitty"
   default-column-width { proportion 0.66667; }
+  background-effect {
+    blur true
+  }
 }
 
 window-rule {
@@ -119,8 +156,21 @@ window-rule {
 }
 
 window-rule {
+  match app-id="org.mozilla.firefox"
+  open-maximized true
+}
+
+window-rule {
   match app-id="brave-browser"
   open-maximized true
+
+  popups {
+    opacity 0.9
+
+    background-effect {
+      blur true
+    }
+  }
 }
 
 window-rule {
@@ -141,6 +191,11 @@ window-rule {
 window-rule {
   match app-id="dev.zed.Zed"
   open-maximized true
+  draw-border-with-background false
+
+  background-effect {
+    blur true
+  }
 }
 
 window-rule {
@@ -200,9 +255,15 @@ window-rule {
   default-column-width { proportion 0.66667; }
 }
 
+
 debug {
   honor-xdg-activation-with-invalid-serial
 }
+
+
+// ------------------------------------
+// Keyboard and Mouse Bindings
+// ------------------------------------
 
 binds {
   // --- Global ---
@@ -224,6 +285,7 @@ binds {
   Shift+Print { screenshot-screen show-pointer=false; }
   Mod+Print { screenshot-window; }
 
+
   // ------------------------------------
   // Media
   // ------------------------------------
@@ -241,6 +303,7 @@ binds {
   XF86AudioStop allow-when-locked=true { spawn "playerctl" "stop"; }
   XF86AudioNext allow-when-locked=true { spawn "playerctl" "next"; }
   XF86AudioPrev allow-when-locked=true { spawn "playerctl" "previous"; }
+
 
   // ------------------------------------
   // Windows
@@ -286,6 +349,7 @@ binds {
   Mod+Ctrl+Shift+WheelScrollDown { move-column-right; }
   Mod+Ctrl+Shift+WheelScrollUp { move-column-left; }
 
+
   // ------------------------------------
   // Workspaces
   // ------------------------------------
@@ -329,8 +393,6 @@ binds {
   Mod+Ctrl+Shift+Page_Up { move-column-to-workspace-up; }
   Mod+Ctrl+Shift+U { move-column-to-workspace-down; }
   Mod+Ctrl+Shift+I { move-column-to-workspace-up; }
-  // Mod+Ctrl+Shift+WheelScrollDown cooldown-ms=200 { move-column-to-workspace-down; }
-  // Mod+Ctrl+Shift+WheelScrollUp cooldown-ms=200 { move-column-to-workspace-up; }
   Mod+Ctrl+Shift+1 { move-column-to-workspace 1; }
   Mod+Ctrl+Shift+2 { move-column-to-workspace 2; }
   Mod+Ctrl+Shift+3 { move-column-to-workspace 3; }
