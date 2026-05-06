@@ -1,6 +1,5 @@
 FROM scratch AS ctx
 COPY build_files /
-COPY system_files/usr/share/dltos /dltos
 
 FROM golang:1.26.2-trixie AS go_builder
 RUN go install github.com/probeldev/niri-float-sticky@v0.0.8
