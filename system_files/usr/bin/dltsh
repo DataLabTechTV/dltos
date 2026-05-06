@@ -33,13 +33,34 @@ confirm() {
 	done
 }
 
-if find_box "$BOX_NAME"; then
-	exec distrobox enter "$BOX_NAME"
-else
-	if confirm "Create and run dltos distrobox?"; then
-		distrobox assemble create --file "$BOX_CONF"
+deprecated_main() {
+	if find_box "$BOX_NAME"; then
 		exec distrobox enter "$BOX_NAME"
 	else
-		exec "$SHELL"
+		if confirm "Create and run dltos distrobox?"; then
+			distrobox assemble create --file "$BOX_CONF"
+			exec distrobox enter "$BOX_NAME"
+		else
+			exec "$SHELL"
+		fi
 	fi
-fi
+}
+
+main() {
+	STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/dltsh"
+	COUNTER_FILE="$STATE_DIR/warncnt"
+
+	mkdir -p "$STATE_DIR"
+
+	[ -f "$COUNTER_FILE" ] || echo 0 >"$COUNTER_FILE"
+	count=$(<"$COUNTER_FILE")
+
+	if [ "$count" -lt 5 ]; then
+		echo "WARNING: /usr/bin/dltsh was deprecated in favor of /bin/zsh (host), which is now the default for DLT OS!"
+		echo $((count + 1)) >"$COUNTER_FILE"
+	fi
+
+	exec /bin/zsh
+}
+
+main
