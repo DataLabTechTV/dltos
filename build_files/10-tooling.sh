@@ -52,7 +52,7 @@ install_network_tools() {
 
 install_graphics_tools() {
 	dnf5 -y --enable-repo=rpmfusion-free install libheif-freeworld
-	dnf5 -y install ImageMagick ImageMagick-heic libde265
+	dnf5 -y install ImageMagick ImageMagick-heic libde265 chafa
 	uv tool install rembg[gpu,cli]
 }
 
