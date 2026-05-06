@@ -1,0 +1,10 @@
+[Unit]
+Description=Makes picture in picture windows stick to all workspaces
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/niri-float-sticky
+Restart=on-failure
+
+[Install]
+WantedBy=graphical-session.target
