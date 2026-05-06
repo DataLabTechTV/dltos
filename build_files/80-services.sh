@@ -2,4 +2,4 @@
 
 set -euxo pipefail
 
-systemctl --global enable niri-float.sticky.service
+systemctl --global enable niri-float-sticky.service
