@@ -89,10 +89,12 @@ install_ai_tools() {
 
 install_data_tools() {
 	dnf5 -y install jq yq sqlite3 miller gnuplot
-	curl https://install.duckdb.org | sh
-	go install github.com/IllumiKnowLabs/labstore/cmd/labstore@v0.1.0
 	uv tool install termgraph
 	uv tool install visidata
+	go install github.com/IllumiKnowLabs/labstore/cmd/labstore@v0.1.0
+
+	curl -L https://install.duckdb.org/v1.5.0/duckdb_cli-linux-amd64.zip | funzip >/usr/bin/duckdb
+	chmod +x /usr/bin/duckdb
 }
 
 setup_rpmfusion &&
