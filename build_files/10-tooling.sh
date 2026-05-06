@@ -2,11 +2,10 @@
 
 set -euxo pipefail
 
-# Copy of system_files/usr/share/dltos
-DLTOS_DIR="$(dirname "${BASH_SOURCE[0]}")/dltos"
+ENV_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
-# shellcheck disable=SC1091
-. "$DLTOS_DIR/uv-env.sh"
+# shellcheck source=uv-env.sh
+. "$ENV_DIR/uv-env.sh"
 
 dnf5 -y install uv firecracker
 
