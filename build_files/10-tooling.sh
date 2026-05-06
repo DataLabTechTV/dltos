@@ -24,8 +24,7 @@ setup_rpmfusion() {
 		"https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" \
 		"https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm"
 
-	dnf5 config-manager setopt rpmfusion-free.enabled=0
-	dnf5 config-manager setopt rpmfusion-nonfree.enabled=0
+	dnf5 config-manager disable 'rpmfusion-*'
 }
 
 install_language_tools() {
@@ -51,8 +50,7 @@ install_network_tools() {
 }
 
 install_graphics_tools() {
-	dnf5 -y --enable-repo=rpmfusion-free install libheif-freeworld
-	dnf5 -y install ImageMagick ImageMagick-heic libde265 chafa
+	dnf5 -y install ImageMagick ImageMagick-heic libheif libde265 chafa
 	uv tool install rembg[gpu,cli]
 }
 
