@@ -97,12 +97,12 @@ install_data_tools() {
 	chmod +x /usr/bin/duckdb
 }
 
-setup_rpmfusion &&
-	install_language_tools &&
-	install_shell_tools &&
-	install_network_tools &&
-	install_graphics_tools &&
-	install_dev_tools &&
-	install_container_tools &&
-	install_ai_tools &&
-	install_data_tools
+setup_rpmfusion
+install_language_tools
+install_shell_tools
+install_network_tools
+install_graphics_tools
+install_dev_tools
+install_container_tools
+install_ai_tools
+install_data_tools
