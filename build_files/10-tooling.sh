@@ -4,13 +4,13 @@ set -euxo pipefail
 
 ENV_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
-# shellcheck source=go-env.sh
+# shellcheck source=/dev/null
 . "$ENV_DIR/go-env.sh"
 
-# shellcheck source=cargo-env.sh
+# shellcheck source=/dev/null
 . "$ENV_DIR/cargo-env.sh"
 
-# shellcheck source=uv-env.sh
+# shellcheck source=/dev/null
 . "$ENV_DIR/uv-env.sh"
 
 setup_rpmfusion() {
@@ -64,7 +64,7 @@ install_dev_tools() {
 	dnf5 -y swap vim-enhanced neovim
 	alternatives --install /usr/bin/vim vim /usr/bin/nvim 100
 
-	dnf5 -y --enable-repo=terra zed
+	dnf5 -y --enable-repo=terra install zed
 	dnf5 -y install pre-commit cloc git-delta
 	go install github.com/gohugoio/hugo@v0.111.3
 }
