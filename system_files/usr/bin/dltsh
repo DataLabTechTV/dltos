@@ -60,7 +60,7 @@ main() {
 		echo $((count + 1)) >"$COUNTER_FILE"
 	fi
 
-	exec /bin/zsh
+	exec /bin/zsh --login
 }
 
 main
