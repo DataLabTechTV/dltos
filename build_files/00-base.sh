@@ -2,9 +2,12 @@
 
 set -euxo pipefail
 
-dnf5 -y remove xwaylandvideobridge
+dnf5 -y install zsh
+
 dnf5 -y install kitty
 dnf5 -y --enable-repo=terra install ghostty
+
+dnf5 -y remove xwaylandvideobridge
 dnf5 -y install xdg-desktop-portal-gnome qt6ct
 dnf5 -y install wev wlsunset cava playerctl
 dnf5 -y --enable-repo=terra install mpvpaper
