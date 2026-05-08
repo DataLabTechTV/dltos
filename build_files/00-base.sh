@@ -2,6 +2,7 @@
 
 set -euxo pipefail
 
+dnf5 -y remove fw-fanctrl
 dnf5 -y install zsh
 
 dnf5 -y install kitty
