@@ -1,0 +1,26 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+add_newline = false
+
+[package]
+disabled = true
+
+[gcloud]
+disabled = true
+
+[aws]
+disabled = true
+
+[container]
+disabled = false
+style = 'green'
+
+[docker_context]
+only_with_files = false
+
+[directory]
+truncation_length = 2
+truncate_to_repo = false
+
+[shell]
+disabled = true
