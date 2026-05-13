@@ -1,0 +1,2 @@
+# shellcheck source=/dev/null
+source /etc/zsh/init.zsh
