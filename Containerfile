@@ -25,13 +25,8 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
   /ctx/10-tooling.sh
 
 COPY --from=go_builder /go/bin/niri-float-sticky /usr/bin/niri-float-sticky
-
-COPY system_files /
-
 COPY --from=zsh_configs /usr/share/zsh/antidote /usr/share/zsh/antidote
-RUN --mount=type=bind,from=zsh_configs,source=/,target=/zsh \
-  printf "\n# --- antidote bundle ---\n" >> /etc/zsh/plugins.zsh && \
-  echo 'source /usr/share/zsh/antidote/plugins.zsh' >> /etc/zsh/plugins.zsh
+COPY system_files /
 
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
   --mount=type=cache,dst=/var/cache \
