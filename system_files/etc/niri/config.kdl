@@ -3,7 +3,7 @@ spawn-at-startup "systemctl" "--user" "import-environment" "WAYLAND_DISPLAY" "XD
 spawn-at-startup "dbus-update-activation-environment" "--systemd" "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP=niri"
 spawn-at-startup "qs" "-c" "noctalia-shell"
 
-screenshot-path "~/Pictures/Screenshots/Screenshot_%Y%m%d_%H%M%S.png"
+screenshot-path null
 
 prefer-no-csd
 
@@ -151,6 +151,14 @@ window-rule {
 }
 
 window-rule {
+  match app-id="com.mitchellh.ghostty"
+  default-column-width { proportion 0.66667; }
+  background-effect {
+    blur true
+  }
+}
+
+window-rule {
   match app-id="org.kde.konsole"
   default-column-width { proportion 0.66667; }
 }
@@ -161,11 +169,17 @@ window-rule {
 }
 
 window-rule {
+  match app-id="librewolf"
+  open-maximized true
+}
+
+window-rule {
   match app-id="brave-browser"
   open-maximized true
 
   popups {
     opacity 0.9
+    geometry-corner-radius 10
 
     background-effect {
       blur true
