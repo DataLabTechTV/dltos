@@ -112,7 +112,7 @@ jobs:
           export REGISTRY_AUTH_FILE="$HOME/.docker/config.json"
           CACHE_IMAGE="${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}-cache"
 
-          sudo buildah build \
+          sudo --preserve-env=REGISTRY_AUTH_FILE buildah build \
             --layers \
             --cache-from "$CACHE_IMAGE" \
             --cache-to "$CACHE_IMAGE" \
