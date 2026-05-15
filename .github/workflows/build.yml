@@ -109,7 +109,7 @@ jobs:
             fi
           done <<< "$LABELS"
 
-          CACHE_IMAGE="${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:cache"
+          CACHE_IMAGE="${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}-cache"
 
           sudo buildah build \
             --layers \
