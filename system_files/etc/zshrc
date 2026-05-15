@@ -55,5 +55,5 @@ for rc in /etc/zshrc.d/*.zsh; do
 	source "$rc"
 done
 
-fpath=("/etc/zsh/functions" "$fpath")
+fpath=("$fpath" "/etc/zsh/functions")
 autoload -Uz /etc/zsh/functions/*(N:t)
