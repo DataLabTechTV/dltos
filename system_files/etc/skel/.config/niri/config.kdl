@@ -1,0 +1,28 @@
+include "/etc/niri/config.kdl"
+
+// spawn-at-startup "tray-launch" "flatpak" "run" "--command=signal-desktop" "org.signal.Signal"
+// spawn-at-startup "tray-launch" "flatpak" "run" "--command=Telegram" "org.telegram.desktop" "-autostart"
+// spawn-at-startup "tray-launch" "flatpak" "run" "--command=SyncThingy" "com.github.zocker_160.SyncThingy"
+
+// hotkey-overlay {
+//   skip-at-startup
+// }
+
+// input {
+//   keyboard {
+//     xkb { layout "pt"; }
+//   }
+// }
+
+// output "DP-1" {
+//   scale 2.0
+// }
+
+// layout {
+//   preset-column-widths {
+//     proportion 0.5
+//     proportion 0.66667
+//     proportion 0.33333
+//     proportion 0.725
+//   }
+// }
