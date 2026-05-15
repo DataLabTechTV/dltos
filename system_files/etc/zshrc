@@ -56,5 +56,5 @@ for rc in /etc/zshrc.d/*.zsh; do
 done
 
 # shellcheck disable=SC2206
-export fpath=(/etc/zsh/functions $fpath)
+fpath=(/etc/zsh/functions $fpath)
 autoload -Uz /etc/zsh/functions/*(N:t)
