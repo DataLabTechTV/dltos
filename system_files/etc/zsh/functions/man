@@ -1,0 +1,8 @@
+function man() {
+  if ! command -v bat &>/dev/null; then
+    command man "$@"
+    return 0
+  fi
+
+  command man "$@" | bat -l man
+}
