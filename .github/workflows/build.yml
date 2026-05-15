@@ -89,12 +89,13 @@ jobs:
           sep-tags: " "
           sep-annotations: " "
 
-      # - name: Restore DNF package cache
-      #   uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
-      #   with:
-      #     path: /var/tmp/buildah-cache-*
-      #     key: ${{ runner.os }}-buildah-${{ env.IMAGE_NAME }}-${{ github.run_id }}
-      #     restore-keys: ${{ runner.os }}-buildah-${{ env.IMAGE_NAME }}-
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        if: github.event_name != 'pull_request' && (github.ref == format('refs/heads/{0}', github.event.repository.default_branch) || github.ref == 'refs/heads/testing')
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Image
         id: build_image
@@ -108,16 +109,15 @@ jobs:
             fi
           done <<< "$LABELS"
 
-          sudo buildah build "${LABEL_ARGS[@]}" --tag raw-img -f ./Containerfile .
+          CACHE_IMAGE="${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:cache"
 
-      # - name: Fix DNF cache permissions
-      #   run: sudo chmod 777 --recursive /var/tmp/buildah-cache-* 2>/dev/null || true
-
-      # - name: Save DNF package cache
-      #   uses: actions/cache/save@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
-      #   with:
-      #     path: /var/tmp/buildah-cache-*
-      #     key: ${{ runner.os }}-buildah-${{ env.IMAGE_NAME }}-${{ github.run_id }}
+          sudo buildah build \
+            --layers \
+            --cache-from "$CACHE_IMAGE" \
+            --cache-to "$CACHE_IMAGE" \
+            "${LABEL_ARGS[@]}" \
+            --tag raw-img \
+            -f ./Containerfile .
 
       - name: Run Rechunker
         id: rechunk
@@ -140,14 +140,6 @@ jobs:
           sudo podman untag raw-img
 
           echo "ref=containers-storage:localhost/chunked-img" >> "$GITHUB_OUTPUT"
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
-        if: github.event_name != 'pull_request' && (github.ref == format('refs/heads/{0}', github.event.repository.default_branch) || github.ref == 'refs/heads/testing')
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push to GHCR
         if: github.event_name != 'pull_request' && (github.ref == format('refs/heads/{0}', github.event.repository.default_branch) || github.ref == 'refs/heads/testing')
