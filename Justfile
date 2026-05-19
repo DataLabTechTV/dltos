@@ -293,7 +293,6 @@ spawn-vm rebuild="0" type="qcow2" ram="6G":
       --vsock=false --pass-ssh-key=false \
       -i ./output/**/*.{{ type }}
 
-
 # Runs shell check on all Bash scripts
 lint:
     #!/usr/bin/env bash
@@ -317,3 +316,18 @@ format:
     fi
     # Run shfmt on all Bash scripts
     /usr/bin/find . -iname "*.sh" -type f -exec shfmt --write "{}" ';'
+
+# (Re)generates the fastfetch ASCII logo from an image
+update-ascii-logo $png="system_files/usr/share/dltos/logo.png" $ascii="system_files/usr/share/dltos/logo.txt":
+    #!/usr/bin/env bash
+    set -euxo pipefail
+    # Check if ascii-image-converter is installed
+    if ! command -v ascii-image-converter &> /dev/null; then
+        echo "ascii-image-converter could not be found. Please install it."
+        exit 1
+    fi
+    ascii-image-converter $png -d 36,19 -C > $ascii
+    tmp=$(mktemp)
+    trap 'rm -f "$tmp"' EXIT
+    sed 's/^/ /' $ascii > $tmp
+    mv $tmp $ascii
