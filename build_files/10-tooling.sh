@@ -32,6 +32,10 @@ install_language_tools() {
 	cargo install just-lsp
 }
 
+install_fonts() {
+	dnf5 -y --enable-repo=terra install cascadiacode-nerd-fonts cascadiamono-nerd-fonts
+}
+
 install_shell_tools() {
 	dnf5 -y copr enable atim/starship
 	dnf5 -y install starship
@@ -97,6 +101,7 @@ install_data_tools() {
 
 setup_rpmfusion
 install_language_tools
+install_fonts
 install_shell_tools
 install_network_tools
 install_graphics_tools
