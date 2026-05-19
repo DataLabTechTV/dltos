@@ -1,0 +1,12 @@
+[Desktop Entry]
+DefaultProfile=DLTOS.profile
+
+[General]
+ConfigVersion=1
+
+[KonsoleWindow]
+RememberWindowSize=false
+
+[MainWindow]
+MenuBar=Disabled
+ToolBarsMovable=Enabled
