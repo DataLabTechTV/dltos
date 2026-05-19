@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+rpm-ostree status --json | jq -r '.deployments[] | select(.booted) | .["container-image-reference"]' | cut -d/ -f3

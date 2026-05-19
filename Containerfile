@@ -32,8 +32,9 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
   --mount=type=cache,dst=/var/cache \
   --mount=type=cache,dst=/var/log \
   --mount=type=tmpfs,dst=/tmp \
-  /ctx/80-services.sh && \
-  /ctx/90-initramfs.sh && \
-  /ctx/99-validations.sh
+  /ctx/20-services.sh && \
+  /ctx/30-cosmetics.sh && \
+  /ctx/40-initramfs.sh && \
+  /ctx/50-validations.sh
 
 RUN bootc container lint
