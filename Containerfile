@@ -11,8 +11,8 @@ ENV ANTIDOTE_HOME=/usr/share/zsh/antidote
 RUN apk add --no-cache zsh git
 RUN git clone --depth=1 https://github.com/mattmc3/antidote.git /antidote
 RUN mkdir -p ${ANTIDOTE_HOME}
-RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
-    zsh /antidote/antidote bundle < /ctx/zsh_plugins.txt > ${ANTIDOTE_HOME}/plugins.zsh
+COPY build_files/zsh_plugins.txt /tmp/zsh_plugins.txt
+RUN zsh /antidote/antidote bundle < /tmp/zsh_plugins.txt > ${ANTIDOTE_HOME}/plugins.zsh
 
 
 FROM ghcr.io/ublue-os/bazzite-nvidia-open:stable
