@@ -6,7 +6,7 @@ HISTSIZE=10000
 SAVEHIST=100000
 HISTDUP=erase
 setopt appendhistory
-setopt sharedhistory
+setopt sharehistory
 setopt hist_ignore_space
 setopt hist_find_no_dups
 
