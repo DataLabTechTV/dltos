@@ -4,12 +4,6 @@ export EDITOR=vim
 export VISUAL=$EDITOR
 export PAGER='less -X -F -i'
 
-# --- Z Shell ---
-HISTFILE=$HOME/.zsh_history
-HISTSIZE=10000
-SAVEHIST=100000
-WORDCHARS="${WORDCHARS//\//}"
-
 # --- Path ---
 typeset -U path
 path=(
