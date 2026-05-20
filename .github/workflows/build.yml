@@ -119,7 +119,7 @@ jobs:
           export REGISTRY_AUTH_FILE="$HOME/.docker/config.json"
           CACHE_IMAGE="${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}-cache"
 
-          sudo --preserve-env=REGISTRY_AUTH_FILE buildah build \
+          sudo -E buildah build \
             --layers \
             --cache-from "$CACHE_IMAGE" \
             --cache-to "$CACHE_IMAGE" \
@@ -164,7 +164,7 @@ jobs:
           export REGISTRY_AUTH_FILE="$HOME/.docker/config.json"
 
           for tag in ${{ steps.metadata.outputs.tags }}; do
-            sudo --preserve-env=REGISTRY_AUTH_FILE skopeo copy \
+            sudo -E skopeo copy \
               ${{ steps.rechunk.outputs.ref }} \
               docker://${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${tag}
           done
