@@ -97,7 +97,8 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions/cache@v5
+      - name: Cache Container Images
+        uses: actions/cache@v5
         with:
           path: /var/lib/containers/storage
           key: ${{ runner.os }}-${{ runner.arch }}-containers-${{ hashFiles('Containerfile') }}
