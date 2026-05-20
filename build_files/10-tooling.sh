@@ -67,6 +67,7 @@ install_dev_tools() {
 	alternatives --install /usr/bin/vim vim /usr/bin/nvim 100
 
 	dnf5 -y --enable-repo=terra install zed
+	dnf5 -y install emacs-pgtk
 	dnf5 -y install pre-commit cloc git-delta
 	go install github.com/gohugoio/hugo@v0.111.3
 }
