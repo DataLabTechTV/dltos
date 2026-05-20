@@ -97,6 +97,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Restore Buildah Cache
+        uses: actions/cache/restore@v5
+        with:
+          path: /var/tmp/buildah-cache-*
+          key: ${{ runner.os }}-${{ runner.arch }}-buildah-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-buildah
+
       - name: Build Image
         id: build_image
         run: |
@@ -119,6 +126,15 @@ jobs:
             "${LABEL_ARGS[@]}" \
             --tag raw-img \
             -f ./Containerfile .
+
+      - name: Fix Cache Permissions
+        run: sudo chmod 777 --recursive /var/tmp/buildah-cache-0
+
+      - name: Save Buildah Cache
+        uses: actions/cache/save@v5
+        with:
+          path: /var/tmp/buildah-cache-*
+          key: ${{ runner.os }}-${{ runner.arch }}-buildah
 
       - name: Run Rechunker
         id: rechunk
