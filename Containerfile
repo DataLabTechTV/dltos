@@ -1,7 +1,3 @@
-FROM scratch AS ctx
-COPY build_files /
-
-
 FROM docker.io/library/golang:1.26.2-trixie AS go_builder
 RUN go install github.com/probeldev/niri-float-sticky@v0.0.8
 
@@ -17,24 +13,18 @@ RUN zsh /antidote/antidote bundle < /tmp/zsh_plugins.txt > ${ANTIDOTE_HOME}/plug
 
 FROM ghcr.io/ublue-os/bazzite-nvidia-open:stable
 
-RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
-    --mount=type=cache,dst=/var/cache \
-    --mount=type=cache,dst=/var/log \
-    --mount=type=tmpfs,dst=/tmp \
-    /ctx/00-base.sh && \
-    /ctx/10-tooling.sh
+COPY build_files /tmp
+
+RUN /tmp/00-base.sh
+RUN /tmp/10-tooling.sh
 
 COPY --from=go_builder /go/bin/niri-float-sticky /usr/bin/niri-float-sticky
 COPY --from=zsh_configs /usr/share/zsh/antidote /usr/share/zsh/antidote
 COPY system_files /
 
-RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
-    --mount=type=cache,dst=/var/cache \
-    --mount=type=cache,dst=/var/log \
-    --mount=type=tmpfs,dst=/tmp \
-    /ctx/20-services.sh && \
-    /ctx/30-cosmetics.sh && \
-    /ctx/40-initramfs.sh && \
-    /ctx/50-validations.sh
+RUN /tmp/20-services.sh
+RUN /tmp/30-cosmetics.sh
+RUN /tmp/40-initramfs.sh
+RUN /tmp/50-validations.sh
 
 RUN bootc container lint
