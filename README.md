@@ -38,17 +38,62 @@ When you need to update your system, you can either do it with `ujust update` or
 sudo bootc upgrade
 ```
 
-### Bundled Distrobox
+### Testing Packages with Distrobox
 
-In order to use the bundled `dltos` distrobox, the recommend approach is to just point your terminal do `/usr/bin/dltsh`, or simply `dltsh`, as it's already in the `PATH`. This script will create the distrobox for you on the first run and it will open it always by default in the future. You'll also be able to fallback to the host `bash`, if anything goes wrong.
+The bundled `dltos` distrobox is no longer meant to be used as the main working environment. Instead, it can be used to easily sping up an environment that is consistent with the host OS, so that we can temporarily add features for testing and later integration into the custom bootc image.
 
-So, for example for kitty, just edit `~/.config/kitty/kitty.conf` and set:
+For example, let's say you needed to install a CLI tool like `bat` for testing, before you decide to add it to your fork of DLT OS. You could simply create and enter the `dltos` distrobox:
 
+```bash
+distrobox assemble create --file /etc/distrobox/dltos.ini --replace && distrobox enter dltos
 ```
-shell /usr/bin/dltsh
+
+And then, once inside the distrobox, install the CLI tool and export it:
+
+```bash
+sudo dnf5 -y install bat
+distrobox-export --bin /usr/bin/bat
 ```
 
-You can also checkout [DataLabTechTV/dotfiles](https://github.com/DataLabTechTV/dotfiles/blob/main/dot_config/kitty/kitty.conf) for a working example.
+Once you exit the distrobox, the binary you just exported will be available on your host, through `~/.local/bin`.
+
+If, instead, it's a desktop app you want to test:
+
+```bash
+sudo dnf5 -y install emacs-pgtk
+distrobox-export --app emacs
+```
+
+And you'll find that the desktop application is now listed on your system menu.
+
+If, for some reason, you depend on one of the host's tools inside distrobox, you can simply:
+
+```bash
+sudo ln -s /usr/bin/distrobox-host-exec /usr/local/bin/podman
+```
+
+The example above will expose the host's podman command through `distrobox-host-exec`. This way, you might be able to launch containers in the host through the emacs instance running inside the distrobox container.
+
+## Testing and Managing User Configs
+
+Any user configs provisioned by `systemd-tmpfiles` on first login can be modified as usual without being overwritten, but if you want to merge them back to your own fork of DLT OS, then you can use the following `just` commands to help you out:
+
+```bash
+just diff-all-user-configs      # view global changes in a side-by-side diff
+just import-all-user-configs    # overview repo's configs with the user versions
+```
+
+This can also be done individually using `just diff-<app>-user-configs` and `just import-<app>-user-configs` for the following apps:
+
+- `nvim`
+- `gamescope`
+- `konsole`
+- `niri`
+- `zed`
+
+The previous configs cover only the settings that are of interest to be and are, by no means, complete, but it should be enough to help you getting started.
+
+For system-level configs under `/etc` (e.g., `zsh`, `bat`, etc.), I recommend that you check the corresponding package's documentation for the user config directory, if you want to test any settings locally. Depending on the package, user configs might extend or overwrite the system-level configs, so there is no general approach here.
 
 ## Features
 
@@ -71,7 +116,7 @@ For the base system, defined in the custom bootc image, we add `niri` and `nocta
 | -------------------------- | -------- | ------ | --------------------------------------------------------------------------- |
 | `niri` | >= 25.11 | `dnf5` | niri compositor |
 | `noctalia-shell` | >= 4.7.6 | `dnf5` | Noctalia shell (bar and panels). |
-| `niri-float-sticky` | >= 0.0.8 | `go` | Utility to keep a window visible on all workspaces. |
+| `niri-float-sticky` | >= 0.0.8 | `go` | Utility to keep a window visible on all workspaces (installed as a systemd user service). |
 | `xdg-desktop-portal-gnome` | >=49.0   | `dnf5` | Required for the *Screen Capture (PipeWire)* feature on OBS.                |
 | `qt6ct`                    | >=0.11   | `dnf5` | Let's you pick the Qt theme without using KDE utilities.                    |
 | `wev`                      | >=1.1.0  | `dnf5` | Keyboard and mouse event debugging utility.                                 |
@@ -81,12 +126,14 @@ For the base system, defined in the custom bootc image, we add `niri` and `nocta
 
 #### Portals
 
-Here are a few notes about portals. The system will install portal configs by default under `/usr/share/xdg-desktop-portal`. In DLT OS you'll find `niri-portals.conf` and `kde-portals.conf`, preinstalled by KDE and niri, respectively. By default, `niri-portals.conf` should be used. However, we currently still use `kwallet6`, and we haven't added `gnome-keyring` yet, so, for now, we suggest you create a custom config under `~/.config/xdg-desktop-portal/portals.conf` with the following configs:
+Here are a few notes about portals. The system will install portal configs by default under `/usr/share/xdg-desktop-portal`. In DLT OS you'll find `niri-portals.conf` and `kde-portals.conf`, preinstalled by KDE and niri, respectively. By default, `niri-portals.conf` should be used. However, we currently still use `kwallet6`, and we haven't added `gnome-keyring` yet, so, for now, we provide a custom config under `/etc/xdg/xdg-desktop-portal/niri-portals.conf` with the following configs:
 
 ```toml
 [preferred]
 default=gnome
+org.freedesktop.impl.portal.Notification=kde
 org.freedesktop.impl.portal.FileChooser=kde
+org.freedesktop.impl.portal.Print=kde
 org.freedesktop.impl.portal.ScreenCast=gnome
 org.freedesktop.impl.portal.Screenshot=gnome
 ```
@@ -95,7 +142,7 @@ org.freedesktop.impl.portal.Screenshot=gnome
 
 #### Qt Theming
 
-We use `qt6ct` for theming Qt apps on niri. This is optional, but if you want to use it, the best approach is to create an environment config under `~/.config/environment.d/niri.conf` containing:
+We use `qt6ct` for theming Qt apps on niri. This is provided by an environment config under `/etc/environment.d/niri.conf` containing:
 
 ```bash
 QT_QPA_PLATFORM=wayland
@@ -127,7 +174,7 @@ systemctl --user daemon-reexec
 | Package          | Version  | Via     | Observation                                                                                                                                                                                                         |
 | ---------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `kitty`          | >=0.43.1 | `dnf5`  | GPU-accelerated terminal emulator. Highly customizable.                                                                                                                                                             |
-| `fish`           | >=4.2.0  | `dnf5`  | Included in Bazzite by default.                                                                                                                                                                                     |
+| `zsh`           | >=5.9  | `dnf5`  | The Z shell is now the default shell for DLT OS. |
 | `starfish`       | >=1.24.2 | `dnf5`  | Cross-shell prompt, with good defaults. Requires `atim/starship` COPR.                                                                                                                                              |
 | `chezmoi`        | >=2.70   | `dnf5`  | Used to manage dotfiles. Take a look at the [DataLabTechTV/dotfiles](https://github.com/DataLabTechTV/dotfiles) repo for an example and instructions on how to use.                                                 |
 | `direnv`         | >=2.35   | `dnf5`  | Utility to automatically load and unload `.envrc` or `.env` files per directory.                                                                                                                                    |
@@ -185,7 +232,7 @@ systemctl --user daemon-reexec
 
 | Package  | Version  | Via              | Observation                     |
 | -------- | -------- | ---------------- | ------------------------------- |
-| `ollama` | >=0.18.2 | Official Archive | To run your LLM models locally. |
+| `ramalama` | >=0.21.0 | `uv` | To run your LLM models and coding agents locally in a sandbox. |
 
 ### Data
 
