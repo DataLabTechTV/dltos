@@ -1,9 +1,11 @@
 [delta "megabat"]
-    minus-emph-style = yellow bold darkmagenta
+    syntax-theme = ansi
     minus-style = black italic red
-    plus-emph-style = yellow bold darkcyan
+    line-numbers-minus-style = red
+    minus-emph-style = yellow bold darkmagenta
     plus-style = black italic green
-    syntax-theme = Dracula
+    line-numbers-plus-style = green
+    plus-emph-style = yellow bold darkcyan
 
 [delta]
    features = megabat
