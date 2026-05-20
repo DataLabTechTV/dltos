@@ -1,6 +1,16 @@
 # --- antidote bundle ---
 source /usr/share/zsh/antidote/plugins.zsh
 
+# --- abbrev-alias ---
+if command -v abbrev-alias >/dev/null 2>&1; then
+    abbrev-alias --init
+fi
+
+# --- fzf ---
+if command -v fzf >/dev/null 2>&1; then
+    eval "$(fzf --zsh)"
+fi
+
 # --- zoxide ---
 if command -v zoxide >/dev/null 2>&1; then
 	eval "$(zoxide init zsh)"
