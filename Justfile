@@ -2,6 +2,8 @@ export image_name := env("IMAGE_NAME", "dltos")
 export default_tag := env("DEFAULT_TAG", "latest")
 export bib_image := env("BIB_IMAGE", "quay.io/centos-bootc/bootc-image-builder:latest")
 
+delta := "delta --side-by-side --paging=never"
+
 alias build-vm := build-qcow2
 alias rebuild-vm := rebuild-qcow2
 alias run-vm := run-vm-qcow2
@@ -318,6 +320,7 @@ format:
     /usr/bin/find . -iname "*.sh" -type f -exec shfmt --write "{}" ';'
 
 # (Re)generates the fastfetch ASCII logo from an image
+[group('DLT OS Utilities')]
 update-ascii-logo $png="system_files/usr/share/dltos/logo.png" $ascii="system_files/usr/share/dltos/logo.txt":
     #!/usr/bin/env bash
     set -euxo pipefail
@@ -331,3 +334,89 @@ update-ascii-logo $png="system_files/usr/share/dltos/logo.png" $ascii="system_fi
     trap 'rm -f "$tmp"' EXIT
     sed 's/^/ /' $ascii > $tmp
     mv $tmp $ascii
+
+_diff-user-configs $app $user_dir="":
+    #!/usr/bin/env bash
+    defaults_dir="system_files/usr/share/$app/defaults"
+    default_files=$(find "$defaults_dir" -type f | sed "s|$defaults_dir/||")
+    for file in $default_files; do
+        default_file="$defaults_dir/$file"
+        if [ -z "$user_dir" ]; then
+            user_dir="$HOME/.config/$app"
+        fi
+        user_file="$user_dir/$file"
+        {{ delta }} "$default_file" "$user_file"
+    done
+    exit 0
+
+# Diff image neovim configs and user configs
+[group('DLT OS Utilities')]
+diff-nvim-user-configs:
+    @just _diff-user-configs nvim
+
+# Diff image gamescope configs and user configs
+[group('DLT OS Utilities')]
+diff-gamescope-user-configs:
+    @just _diff-user-configs gamescope "$HOME/.config/environment.d"
+
+# Diff image konsole configs and user configs
+[group('DLT OS Utilities')]
+diff-konsole-user-configs:
+    @just _diff-user-configs konsole "$HOME/.config"
+
+# Diff image niri configs and user configs
+[group('DLT OS Utilities')]
+diff-niri-user-configs:
+    @just _diff-user-configs niri
+
+# Diff image zed configs and user configs
+[group('DLT OS Utilities')]
+diff-zed-user-configs:
+    @just _diff-user-configs zed
+
+# Diff all image configs and user configs
+[group('DLT OS Utilities')]
+diff-all-user-configs: diff-nvim-user-configs diff-gamescope-user-configs diff-konsole-user-configs diff-niri-user-configs diff-zed-user-configs
+
+_import-user-configs $app $user_dir="":
+    #!/usr/bin/env bash
+    defaults_dir="system_files/usr/share/$app/defaults"
+    default_files=$(find "$defaults_dir" -type f | sed "s|$defaults_dir/||")
+    for file in $default_files; do
+        default_file="$defaults_dir/$file"
+        if [ -z "$user_dir" ]; then
+            user_dir="$HOME/.config/$app"
+        fi
+        user_file="$user_dir/$file"
+        cp -v "$user_file" "$default_file"
+    done
+    exit 0
+
+# Replace image neovim configs with user configs
+[group('DLT OS Utilities')]
+import-nvim-user-configs:
+    @just _import-user-configs nvim
+
+# Replace image gamescope configs with user configs
+[group('DLT OS Utilities')]
+import-gamescope-user-configs:
+    @just _import-user-configs gamescope "$HOME/.config/environment.d"
+
+# Replace image konsole configs with user configs
+[group('DLT OS Utilities')]
+import-konsole-user-configs:
+    @just _import-user-configs konsole "$HOME/.config"
+
+# Replace image niri configs with user configs
+[group('DLT OS Utilities')]
+import-niri-user-configs:
+    @just _import-user-configs niri
+
+# Import image zed configs with user configs
+[group('DLT OS Utilities')]
+import-zed-user-configs:
+    @just _import-user-configs zed
+
+# Replace all image configs with user configs
+[group('DLT OS Utilities')]
+import-all-user-configs: import-nvim-user-configs import-gamescope-user-configs import-konsole-user-configs import-niri-user-configs import-zed-user-configs
