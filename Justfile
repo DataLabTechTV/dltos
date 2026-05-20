@@ -2,7 +2,8 @@ export image_name := env("IMAGE_NAME", "dltos")
 export default_tag := env("DEFAULT_TAG", "latest")
 export bib_image := env("BIB_IMAGE", "quay.io/centos-bootc/bootc-image-builder:latest")
 
-delta := "delta --side-by-side --paging=never"
+term_width := `tput cols`
+delta := "delta --side-by-side --paging=never --width=" + term_width
 
 alias build-vm := build-qcow2
 alias rebuild-vm := rebuild-qcow2
@@ -346,7 +347,7 @@ _diff-user-configs $app $user_dir="":
         fi
         user_file="$user_dir/$file"
         {{ delta }} "$default_file" "$user_file"
-    done
+    done | less -R
     exit 0
 
 # Diff image neovim configs and user configs
@@ -376,7 +377,15 @@ diff-zed-user-configs:
 
 # Diff all image configs and user configs
 [group('DLT OS Utilities')]
-diff-all-user-configs: diff-nvim-user-configs diff-gamescope-user-configs diff-konsole-user-configs diff-niri-user-configs diff-zed-user-configs
+diff-all-user-configs:
+    #!/usr/bin/env bash
+    (
+        just diff-nvim-user-configs
+        just diff-gamescope-user-configs
+        just diff-konsole-user-configs
+        just diff-niri-user-configs
+        just diff-zed-user-configs
+    ) | less -R
 
 _import-user-configs $app $user_dir="":
     #!/usr/bin/env bash
