@@ -23,6 +23,9 @@ RUN --mount=type=cache,dst=/var/cache \
     /tmp/00-base.sh
 
 COPY build_files/10-tooling.sh /tmp/10-tooling.sh
+COPY build_files/go-env.sh /tmp/go-env.sh
+COPY build_files/cargo-env.sh /tmp/cargo-env.sh
+COPY build_files/uv-env.sh /tmp/uv-env.sh
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/cache/libdnf5 \
     /tmp/10-tooling.sh
