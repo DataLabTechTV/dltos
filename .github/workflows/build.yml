@@ -128,6 +128,8 @@ jobs:
             --tag raw-img \
             -f ./Containerfile .
 
+          echo "ref=containers-storage:localhost/raw-img" >> "$GITHUB_OUTPUT"
+
       - name: Fix Cache Permissions
         run: sudo chmod 777 --recursive /var/tmp/buildah-cache-0
 
@@ -137,27 +139,27 @@ jobs:
           path: /var/tmp/buildah-cache-*
           key: ${{ runner.os }}-${{ runner.arch }}-buildah-${{ github.sha }}
 
-      - name: Run Rechunker
-        id: rechunk
-        run: |
-          container=$(sudo buildah from raw-img)
-          mnt=$(sudo buildah mount $container)
-          sudo bash -c "rm -rf $mnt/run/.* $mnt/run/* $mnt/tmp/.* $mnt/tmp/*"
-          sudo buildah umount $container
-          sudo buildah config --label "-" $container
-          sudo buildah commit --identity-label=false --rm $container raw-img
+      # - name: Run Rechunker
+      #   id: rechunk
+      #   run: |
+      #     container=$(sudo buildah from raw-img)
+      #     mnt=$(sudo buildah mount $container)
+      #     sudo bash -c "rm -rf $mnt/run/.* $mnt/run/* $mnt/tmp/.* $mnt/tmp/*"
+      #     sudo buildah umount $container
+      #     sudo buildah config --label "-" $container
+      #     sudo buildah commit --identity-label=false --rm $container raw-img
 
-          sudo podman run --rm --privileged \
-            --volume /var/lib/containers:/var/lib/containers \
-            quay.io/centos-bootc/centos-bootc:stream10 \
-            rpm-ostree compose build-chunked-oci \
-              --bootc \
-              --format-version 2 \
-              --from localhost/raw-img \
-              --output containers-storage:localhost/chunked-img
-          sudo podman untag raw-img
+      #     sudo podman run --rm --privileged \
+      #       --volume /var/lib/containers:/var/lib/containers \
+      #       quay.io/centos-bootc/centos-bootc:stream10 \
+      #       rpm-ostree compose build-chunked-oci \
+      #         --bootc \
+      #         --format-version 2 \
+      #         --from localhost/raw-img \
+      #         --output containers-storage:localhost/chunked-img
+      #     sudo podman untag raw-img
 
-          echo "ref=containers-storage:localhost/chunked-img" >> "$GITHUB_OUTPUT"
+      #     echo "ref=containers-storage:localhost/chunked-img" >> "$GITHUB_OUTPUT"
 
       - name: Push to GHCR
         if: github.event_name != 'pull_request' && (github.ref == format('refs/heads/{0}', github.event.repository.default_branch) || github.ref == 'refs/heads/testing')
@@ -166,7 +168,7 @@ jobs:
 
           for tag in ${{ steps.metadata.outputs.tags }}; do
             sudo -E skopeo copy \
-              ${{ steps.rechunk.outputs.ref }} \
+              ${{ steps.build_image.outputs.ref }} \
               docker://${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${tag}
           done
 
