@@ -13,12 +13,12 @@ RUN zsh /antidote/antidote bundle < /tmp/zsh_plugins.txt > ${ANTIDOTE_HOME}/plug
 
 FROM ghcr.io/ublue-os/bazzite-nvidia-open:stable
 
-COPY build_files /tmp
-
+COPY build_files/00-base.sh /tmp/00-base.sh
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/cache/libdnf5 \
     /tmp/00-base.sh
 
+COPY build_files/10-tooling.sh /tmp/10-tooling.sh
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/cache/libdnf5 \
     /tmp/10-tooling.sh
@@ -27,18 +27,22 @@ COPY --from=go_builder /go/bin/niri-float-sticky /usr/bin/niri-float-sticky
 COPY --from=zsh_configs /usr/share/zsh/antidote /usr/share/zsh/antidote
 COPY system_files /
 
+COPY build_files/20-services.sh /tmp/20-services.sh
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/cache/libdnf5 \
     /tmp/20-services.sh
 
+COPY build_files/30-cosmetics.sh /tmp/30-cosmetics.sh
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/cache/libdnf5 \
     /tmp/30-cosmetics.sh
 
+COPY build_files/40-initramfs.sh /tmp/40-initramfs.sh
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/cache/libdnf5 \
     /tmp/40-initramfs.sh
 
+COPY build_files/50-validations.sh /tmp/50-validations.sh
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/cache/libdnf5 \
     /tmp/50-validations.sh
