@@ -22,7 +22,7 @@ For more details on how to build your own custom image, please read the [documen
 In order to switch to `dltos` from `bazzite-nvidia-open`, you can simply run the following command:
 
 ```bash
-sudo bootc switch ghcr.io/datalabtechtv/dltos:latest
+sudo bootc switch ghcr.io/datalabtechtv/dltos:stable
 ```
 
 > [!CAUTION]
