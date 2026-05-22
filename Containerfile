@@ -13,6 +13,10 @@ RUN zsh /antidote/antidote bundle < /tmp/zsh_plugins.txt > ${ANTIDOTE_HOME}/plug
 
 FROM ghcr.io/ublue-os/bazzite-nvidia-open:stable
 
+RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/cache/libdnf5 \
+ dnf5 config-manager setopt keepcache=1
+
 COPY build_files/00-base.sh /tmp/00-base.sh
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/cache/libdnf5 \
