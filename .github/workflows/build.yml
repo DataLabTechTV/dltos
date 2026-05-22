@@ -130,7 +130,7 @@ jobs:
 
       - name: Fix Cache Permissions
         run: |
-          [ -d /var/tmp/buildah-cache-0 ] && sudo chmod -R 777 /var/tmp/buildah-cache-0
+          [ -d /var/tmp/buildah-cache-0 ] && sudo chmod -R 777 /var/tmp/buildah-cache-0 || true
 
       - name: Save Buildah Cache
         uses: actions/cache/save@v5
