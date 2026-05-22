@@ -28,8 +28,7 @@ setup_rpmfusion() {
 }
 
 install_language_tools() {
-	#dnf5 -y install golang delve gopls golangci-lint cargo uv python3-devel nodejs-npm shfmt ShellCheck
-	dnf5 -y install golang delve gopls golangci-lint cargo uv python3-devel nodejs-npm shfmt
+	dnf5 -y install golang delve gopls golangci-lint cargo uv python3-devel nodejs-npm shfmt ShellCheck
 	cargo install just-lsp
 }
 
