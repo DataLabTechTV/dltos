@@ -103,7 +103,7 @@ jobs:
           path: /var/tmp/buildah-cache-*
           key: ${{ runner.os }}-${{ runner.arch }}-buildah-${{ github.run_id }}
           restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-buildah-
+            ${{ runner.os }}-${{ runner.arch }}-buildah
 
       - name: Build Image
         id: build_image
