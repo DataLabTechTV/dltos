@@ -129,7 +129,8 @@ jobs:
             -f ./Containerfile .
 
       - name: Fix Cache Permissions
-        run: sudo chmod 777 --recursive /var/tmp/buildah-cache-0
+        run: |
+          [ -d /var/tmp/buildah-cache-0 ] && sudo chmod -R 777 /var/tmp/buildah-cache-0
 
       - name: Save Buildah Cache
         uses: actions/cache/save@v5
