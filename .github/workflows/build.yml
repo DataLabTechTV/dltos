@@ -102,7 +102,8 @@ jobs:
         with:
           path: /var/tmp/buildah-cache-*
           key: ${{ runner.os }}-${{ runner.arch }}-buildah-${{ github.run_id }}
-          restore-keys: ${{ runner.os }}-${{ runner.arch }}-buildah
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-buildah-
 
       - name: Build Image
         id: build_image
@@ -134,7 +135,7 @@ jobs:
         uses: actions/cache/save@v5
         with:
           path: /var/tmp/buildah-cache-*
-          key: ${{ runner.os }}-${{ runner.arch }}-buildah
+          key: ${{ runner.os }}-${{ runner.arch }}-buildah-${{ github.sha }}
 
       - name: Run Rechunker
         id: rechunk
