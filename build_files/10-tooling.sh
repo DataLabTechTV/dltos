@@ -58,6 +58,10 @@ install_graphics_tools() {
 	uv tool install rembg[gpu,cli]
 }
 
+install_doc_tools() {
+	dnf5 -y install pandoc
+}
+
 install_dev_tools() {
 	dnf5 -y copr enable dejan/lazygit
 	dnf5 -y install lazygit
@@ -106,6 +110,7 @@ install_fonts
 install_shell_tools
 install_network_tools
 install_graphics_tools
+install_doc_tools
 install_dev_tools
 install_container_tools
 install_ai_tools
