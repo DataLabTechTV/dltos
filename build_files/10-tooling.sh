@@ -14,8 +14,6 @@ ENV_DIR="$(dirname "${BASH_SOURCE[0]}")"
 . "$ENV_DIR/uv-env.sh"
 
 setup_rpmfusion() {
-	dnf5 -y install distribution-gpg-keys
-
 	rpm --import \
 		"/usr/share/distribution-gpg-keys/rpmfusion/RPM-GPG-KEY-rpmfusion-free-fedora-$(rpm -E %fedora)" \
 		"/usr/share/distribution-gpg-keys/rpmfusion/RPM-GPG-KEY-rpmfusion-nonfree-fedora-$(rpm -E %fedora)"
