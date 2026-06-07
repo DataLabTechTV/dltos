@@ -1,5 +1,5 @@
 # --- General ---
-export SHELL=/bin/zsh
+export SHELL=/usr/bin/zsh
 export EDITOR=vim
 export VISUAL=$EDITOR
 export PAGER='less -X -F -i'
