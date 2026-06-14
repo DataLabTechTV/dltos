@@ -3,7 +3,7 @@ Description=Makes picture in picture windows stick to all workspaces
 PartOf=graphical-session.target
 
 [Service]
-ExecStart=/usr/bin/niri-float-sticky -title "Picture in picture"
+ExecStart=/usr/bin/niri-float-sticky -title "Picture in picture" -title "Picture-in-Picture"
 Restart=on-failure
 
 [Install]
