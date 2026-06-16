@@ -74,17 +74,13 @@ blur {
 // ------------------------------------
 
 layer-rule {
-  background-effect {
-    xray false
-  }
+  background-effect { xray false; }
 }
 
 layer-rule {
   match namespace="^noctalia-(|launcher-overlay|dock)-.*$"
   opacity 0.85
-  background-effect {
-    blur true
-  }
+  background-effect { blur true; }
 }
 
 layer-rule {
@@ -102,10 +98,7 @@ layer-rule {
 window-rule {
   geometry-corner-radius 16
   clip-to-geometry true
-
-  background-effect {
-    xray false
-  }
+  background-effect { xray false; }
 }
 
 window-rule {
@@ -145,17 +138,13 @@ window-rule {
 window-rule {
   match app-id="kitty"
   default-column-width { proportion 0.66667; }
-  background-effect {
-    blur true
-  }
+  background-effect { blur true; }
 }
 
 window-rule {
   match app-id="com.mitchellh.ghostty"
   default-column-width { proportion 0.66667; }
-  background-effect {
-    blur true
-  }
+  background-effect { blur true; }
 }
 
 window-rule {
@@ -180,10 +169,7 @@ window-rule {
   popups {
     opacity 0.9
     geometry-corner-radius 10
-
-    background-effect {
-      blur true
-    }
+    background-effect { blur true; }
   }
 }
 
@@ -207,27 +193,20 @@ window-rule {
   match app-id="obsidian"
   open-maximized true
   opacity 0.9
-  background-effect {
-    blur true
-  }
+  background-effect { blur true; }
 }
 
 window-rule {
   match app-id="emacs"
   default-column-width { proportion 0.66667; }
-  background-effect {
-    blur true
-  }
+  background-effect { blur true; }
 }
 
 window-rule {
   match app-id="dev.zed.Zed"
   open-maximized true
   draw-border-with-background false
-
-  background-effect {
-    blur true
-  }
+  background-effect { blur true; }
 }
 
 window-rule {
@@ -265,17 +244,13 @@ window-rule {
 window-rule {
   match app-id="org.signal.Signal"
   opacity 0.9
-  background-effect {
-    blur true
-  }
+  background-effect { blur true; }
 }
 
 window-rule {
   match app-id="org.telegram.desktop"
   opacity 0.9
-  background-effect {
-    blur true
-  }
+  background-effect { blur true; }
 }
 
 window-rule {
