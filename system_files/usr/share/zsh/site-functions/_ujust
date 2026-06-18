@@ -1,0 +1,5 @@
+#compdef ujust
+source <(JUST_COMPLETE=zsh ujust | sed -E 's/(^|[^u])just/\1ujust/g')
+if [ "$funcstack[1]" = "_ujust" ]; then
+  _clap_dynamic_completer_ujust "$@"
+fi
