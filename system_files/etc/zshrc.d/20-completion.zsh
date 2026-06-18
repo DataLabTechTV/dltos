@@ -1,4 +1,10 @@
-autoload -Uz compinit && compinit -C
+autoload -Uz compinit
+
+if [[ -n ~/.zcompdump(#qNmh-24) ]]; then
+  compinit -C
+else
+  compinit
+fi
 
 zstyle ':completion:*' menu select
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
