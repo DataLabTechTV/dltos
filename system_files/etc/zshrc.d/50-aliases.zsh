@@ -7,6 +7,7 @@ abbrev-alias v='vim'
 abbrev-alias d='distrobox'
 abbrev-alias c='chezmoi'
 abbrev-alias p='podman'
+abbrev-alias j='just'
 
 alias pbcopy='wl-copy --type text/plain'
 alias pbpaste='wl-paste'
