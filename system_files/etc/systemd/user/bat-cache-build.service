@@ -4,6 +4,7 @@ ConditionPathExists=!/var/lib/bat/.cache-built
 
 [Service]
 Type=oneshot
+EnvironmentFile=/etc/environment.d/bat.conf
 ExecStart=/usr/bin/bat cache --build
 ExecStartPost=/usr/bin/mkdir -p /var/lib/bat
 ExecStartPost=/usr/bin/touch /var/lib/bat/.cache-built
