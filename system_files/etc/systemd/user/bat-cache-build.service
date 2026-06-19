@@ -1,13 +1,13 @@
 [Unit]
 Description=Build bat syntax cache
-ConditionPathExists=!/var/lib/bat/.cache-built
+ConditionPathExists=!%h/.local/state/bat/cache-built
 
 [Service]
 Type=oneshot
 EnvironmentFile=/etc/environment.d/bat.conf
 ExecStart=/usr/bin/bat cache --build
-ExecStartPost=/usr/bin/mkdir -p /var/lib/bat
-ExecStartPost=/usr/bin/touch /var/lib/bat/.cache-built
+ExecStartPost=/usr/bin/mkdir -p %h/.local/state/bat
+ExecStartPost=/usr/bin/touch %h/.local/state/bat/cache-built
 
 [Install]
 WantedBy=multi-user.target
