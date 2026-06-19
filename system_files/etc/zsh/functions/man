@@ -4,5 +4,5 @@ function man() {
     return 0
   fi
 
-  command man "$@" | bat -l man 2>/dev/null
+  command man "$@" 2>/dev/null | bat -l man
 }
