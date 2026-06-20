@@ -39,7 +39,7 @@ install_shell_tools() {
     dnf5 -y install starship
     dnf5 -y copr disable atim/starship
 
-    dnf5 -y install chezmoi direnv keychain zoxide bat ripgrep fd-find eza ncdu age btop nvtop tldr
+    dnf5 -y install chezmoi direnv keychain zoxide bat ripgrep fd-find eza ncdu age btop nvtop tldr trash-cli
     dnf5 -y --enable-repo=terra install yazi
     go install github.com/pranshuparmar/witr/cmd/witr@latest
 }
