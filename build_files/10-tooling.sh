@@ -55,7 +55,7 @@ install_network_tools() {
 
 install_graphics_tools() {
     dnf5 -y install ImageMagick ImageMagick-heic libheif libde265 chafa
-    uv tool install rembg[gpu,cli]
+    uv tool install --python 3.13.14 rembg[gpu,cli]
 }
 
 install_doc_tools() {
