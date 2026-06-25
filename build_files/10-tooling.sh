@@ -77,7 +77,7 @@ install_dev_tools() {
 }
 
 install_container_tools() {
-    dnf5 -y install docker-cli docker-compose-switch
+    dnf5 -y install docker-cli docker-compose-switch oci-seccomp-bpf-hook
     mv /usr/bin/docker /usr/bin/docker.real
     mv /usr/bin/docker-compose /usr/bin/docker-compose.real
 
