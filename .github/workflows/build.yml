@@ -98,7 +98,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Restore Buildah Cache
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: /var/tmp/buildah-cache-*
           key: ${{ runner.os }}-${{ runner.arch }}-buildah-${{ github.sha }}
@@ -133,7 +133,7 @@ jobs:
           [ -d /var/tmp/buildah-cache-0 ] && sudo chmod -R 777 /var/tmp/buildah-cache-0 || true
 
       - name: Save Buildah Cache
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@v6
         with:
           path: /var/tmp/buildah-cache-*
           key: ${{ runner.os }}-${{ runner.arch }}-buildah-${{ github.sha }}
