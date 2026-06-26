@@ -365,12 +365,12 @@ binds {
 
   // --- Window moving ---
   Mod+Ctrl+Left { move-column-left; }
-  Mod+Ctrl+Down { move-window-down; }
-  Mod+Ctrl+Up { move-window-up; }
+  Mod+Ctrl+Down { move-window-down-or-to-workspace-down; }
+  Mod+Ctrl+Up { move-window-up-or-to-workspace-up; }
   Mod+Ctrl+Right { move-column-right; }
   Mod+Ctrl+H { consume-or-expel-window-left; }
-  Mod+Ctrl+J { move-window-down; }
-  Mod+Ctrl+K { move-window-up; }
+  Mod+Ctrl+J { move-window-down-or-to-workspace-down; }
+  Mod+Ctrl+K { move-window-up-or-to-workspace-up; }
   Mod+Ctrl+L { consume-or-expel-window-right; }
   Mod+Ctrl+Home { move-column-to-first; }
   Mod+Ctrl+End { move-column-to-last; }
