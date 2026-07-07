@@ -135,6 +135,12 @@ window-rule {
 }
 
 window-rule {
+    match app-id="steam" title="^Launching...$"
+    open-floating true
+    default-floating-position x=660 y=340 relative-to="top-left"
+}
+
+window-rule {
     match app-id="steam" title="^Steam Settings$"
     open-floating true
 }
