@@ -104,3 +104,22 @@
   (setq git-commit-summary-max-length 72))
 
 (map! "C-c o" #'browse-url-at-point)
+
+(setq delete-by-moving-to-trash t)
+
+(custom-set-faces!
+  '(fixed-pitch :height 1.0 :family nil))
+
+(setq-default org-startup-indented t
+              org-pretty-entities t
+              org-use-sub-superscripts "{}"
+              org-hide-emphasis-markers t
+              org-startup-with-inline-images t
+              org-image-actual-width '(300))
+
+(after! org
+  (require 'org-superstar)
+  (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1))))
+
+(setq +evil-want-o/O-to-continue-comments nil)
+(setq +default-want-RET-continue-comments nil)

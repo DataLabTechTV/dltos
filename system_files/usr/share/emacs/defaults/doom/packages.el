@@ -54,5 +54,7 @@
 ;; (unpin! t)
 
 (package! just-mode)
+(package! kdl-mode)
 (package! keychain-environment)
 (package! nftables-mode)
+(package! org-superstar)
