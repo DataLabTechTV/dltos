@@ -355,6 +355,11 @@ _diff-user-configs $app $user_dir="":
 diff-nvim-user-configs:
     @just _diff-user-configs nvim
 
+# Diff image emacs configs and user configs
+[group('DLT OS Utilities')]
+diff-emacs-user-configs:
+    @just _diff-user-configs emacs "$HOME/.config"
+
 # Diff image gamescope configs and user configs
 [group('DLT OS Utilities')]
 diff-gamescope-user-configs:
@@ -381,6 +386,7 @@ diff-all-user-configs:
     #!/usr/bin/env bash
     (
         just diff-nvim-user-configs
+        just diff-emacs-user-configs
         just diff-gamescope-user-configs
         just diff-konsole-user-configs
         just diff-niri-user-configs
@@ -406,6 +412,11 @@ _import-user-configs $app $user_dir="":
 import-nvim-user-configs:
     @just _import-user-configs nvim
 
+# Replace image emacs configs with user configs
+[group('DLT OS Utilities')]
+import-emacs-user-configs:
+    @just _import-user-configs emacs "$HOME/.config"
+
 # Replace image gamescope configs with user configs
 [group('DLT OS Utilities')]
 import-gamescope-user-configs:
@@ -428,4 +439,5 @@ import-zed-user-configs:
 
 # Replace all image configs with user configs
 [group('DLT OS Utilities')]
-import-all-user-configs: import-nvim-user-configs import-gamescope-user-configs import-konsole-user-configs import-niri-user-configs import-zed-user-configs
+import-all-user-configs: import-nvim-user-configs import-emacs-user-configs import-gamescope-user-configs \
+    import-konsole-user-configs import-niri-user-configs import-zed-user-configs
