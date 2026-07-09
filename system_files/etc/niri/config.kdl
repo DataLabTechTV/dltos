@@ -260,6 +260,12 @@ window-rule {
 }
 
 window-rule {
+    match app-id="signal"
+    opacity 0.9
+    background-effect { blur true; }
+}
+
+window-rule {
     match app-id="org.telegram.desktop"
     opacity 0.9
     background-effect { blur true; }
