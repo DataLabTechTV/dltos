@@ -36,6 +36,13 @@ install_fonts() {
 }
 
 install_shell_tools() {
+    url="https://github.com/michel-kraemer/zsh-patina/releases/download/1.8.0/zsh-patina-v1.8.0-x86_64-unknown-linux-gnu.tar.gz"
+    tmpdir=$(mktemp -d)
+    curl -L "$url" -o - | tar xvzf - -C "$tmpdir" --strip-components=1
+    cp "$tmpdir/zsh-patina" /usr/bin
+    cp "$tmpdir/completion/_zsh_patina" /usr/share/zsh/site-functions
+    rm -rf "$tmpdir"
+
     dnf5 -y copr enable atim/starship
     dnf5 -y install starship
     dnf5 -y copr disable atim/starship

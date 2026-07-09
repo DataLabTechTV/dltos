@@ -1,6 +1,11 @@
 # --- antidote bundle ---
 source /usr/share/zsh/antidote/plugins.zsh
 
+# --- zsh-patina ---
+if command -v zsh-patina >/dev/null 2>&1; then
+    eval "$(zsh-patina activate)"
+fi
+
 # --- abbrev-alias ---
 if command -v abbrev-alias >/dev/null 2>&1; then
     abbrev-alias --init
