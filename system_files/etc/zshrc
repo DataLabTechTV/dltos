@@ -50,12 +50,9 @@ unset -f pathmunge _src_etc_profile_d
 
 setopt local_options null_glob
 
-# shellcheck disable=SC2206
-fpath=(/etc/zsh/functions $fpath)
-
 for rc in /etc/zshrc.d/*.zsh; do
-	# shellcheck source=/dev/null
-	source "$rc"
+    # shellcheck source=/dev/null
+    source "$rc"
 done
 
-autoload -Uz /etc/zsh/functions/*(N:t)
+autoload -Uz ls man
