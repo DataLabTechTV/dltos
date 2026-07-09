@@ -26,7 +26,8 @@ setup_rpmfusion() {
 }
 
 install_language_tools() {
-    dnf5 -y install cmake golang delve gopls golangci-lint cargo uv python3-devel nodejs-npm shfmt ShellCheck
+    dnf5 -y install cmake golang delve gopls golangci-lint cargo uv \
+        python3-devel nodejs-npm shfmt ShellCheck
     cargo install just-lsp
 }
 
@@ -39,8 +40,8 @@ install_shell_tools() {
     dnf5 -y install starship
     dnf5 -y copr disable atim/starship
 
-    dnf5 -y install chezmoi direnv keychain zoxide bat ripgrep fd-find eza ncdu age strace btop nvtop tldr trash-cli \
-        perl-Image-ExifTool
+    dnf5 -y install chezmoi direnv keychain zoxide bat ripgrep fd-find eza \
+        ncdu age strace btop nvtop tldr trash-cli perl-Image-ExifTool
     dnf5 -y --enable-repo=terra install yazi
     go install github.com/pranshuparmar/witr/cmd/witr@latest
 }
