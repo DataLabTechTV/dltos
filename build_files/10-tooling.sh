@@ -40,7 +40,7 @@ install_shell_tools() {
     tmpdir=$(mktemp -d)
     curl -L "$url" -o - | tar xvzf - -C "$tmpdir" --strip-components=1
     cp "$tmpdir/zsh-patina" /usr/bin
-    cp "$tmpdir/completion/_zsh_patina" /usr/share/zsh/site-functions
+    cp "$tmpdir/completion/_zsh-patina" /usr/share/zsh/site-functions
     rm -rf "$tmpdir"
 
     dnf5 -y copr enable atim/starship
