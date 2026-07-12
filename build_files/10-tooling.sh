@@ -61,6 +61,10 @@ install_network_tools() {
     uv tool install --with=httpie-aws-authv4 httpie
 }
 
+install_mail_tools() {
+    dnf5 -y install isync maildir-utils
+}
+
 install_graphics_tools() {
     dnf5 -y install ImageMagick ImageMagick-heic libheif libde265 chafa
     # uv python install 3.13.12
@@ -117,6 +121,7 @@ install_language_tools
 install_fonts
 install_shell_tools
 install_network_tools
+install_mail_tools
 install_graphics_tools
 install_doc_tools
 install_dev_tools
