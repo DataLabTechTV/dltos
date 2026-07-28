@@ -137,6 +137,3 @@
 
 (setq +evil-want-o/O-to-continue-comments nil)
 (setq +default-want-RET-continue-comments nil)
-
-(after! projectile
-  (setq projectile-switch-project-action #'projectile-dired))
