@@ -58,3 +58,4 @@
 (package! keychain-environment)
 (package! nftables-mode)
 (package! org-superstar)
+(package! org-appear)

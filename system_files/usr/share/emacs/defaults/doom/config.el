@@ -120,7 +120,20 @@
 
 (after! org
   (require 'org-superstar)
-  (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1))))
+  (require 'org-appear)
+
+  (setq org-appear-autolinks t
+        org-appear-trigger 'manual)
+
+  (add-hook 'org-mode-hook #'org-superstar-mode)
+  (add-hook 'org-mode-hook #'org-appear-mode)
+
+  (defun +org-appear-setup ()
+    (add-hook 'evil-insert-state-entry-hook #'org-appear-manual-start nil t)
+    (add-hook 'evil-insert-state-exit-hook #'org-appear-manual-stop nil t))
+
+  (add-hook 'org-mode-hook #'+org-appear-setup))
+
 
 (setq +evil-want-o/O-to-continue-comments nil)
 (setq +default-want-RET-continue-comments nil)
