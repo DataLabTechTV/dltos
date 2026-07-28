@@ -123,6 +123,11 @@
   (require 'org-appear)
 
   (setq org-appear-autolinks t
+        org-appear-autoemphasis t
+        org-appear-autosubmarkers t
+        org-appear-autoentities t
+        org-appear-inside-latex t
+        org-appear-autokeywords t
         org-appear-trigger 'manual)
 
   (add-hook 'org-mode-hook #'org-superstar-mode)
