@@ -77,17 +77,43 @@
 ;; they are implemented.
 
 ;; Custom configs
-(setq-default fill-column 120)
+
+
+;; Variables
+
+(setq delete-by-moving-to-trash t
+      +evil-want-o/O-to-continue-comments nil
+      +default-want-RET-continue-comments nil)
+
+
+(setq-default fill-column 120
+              org-startup-indented t
+              org-pretty-entities t
+              org-use-sub-superscripts "{}"
+              org-hide-emphasis-markers t
+              org-startup-with-inline-images t
+              org-image-actual-width '(300))
+
+(set-frame-parameter nil 'alpha-background 85)
+(add-to-list 'default-frame-alist '(alpha-background . 85))
+
+
+;; Keybindings
+
+(map! "C-c o" #'browse-url-at-point)
+
+
+;; Hooks
+
 (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
 
-(after! treemacs
-  (define-key treemacs-mode-map [mouse-1]
-              #'treemacs-single-click-expand-action))
+
+;; Packages
 
 (after! emacs
-  (setq mouse-wheel-progressive-speed nil)
+  (setq mouse-wheel-progressive-speed nil
+        mouse-wheel-scroll-amount '(3))
 
-  (setq mouse-wheel-scroll-amount '(3))
 
   (global-set-key (kbd "<M-wheel-up>")
                   (lambda () (interactive) (scroll-down 10)))
@@ -95,28 +121,12 @@
   (global-set-key (kbd "<M-wheel-down>")
                   (lambda () (interactive) (scroll-up 10))))
 
-(set-frame-parameter nil 'alpha-background 85)
-(add-to-list 'default-frame-alist '(alpha-background . 85))
+(after! keychain-environment
+  (keychain-refresh-environment))
 
-(require 'keychain-environment)
-(keychain-refresh-environment)
-
-(after! git-commit
-  (setq git-commit-summary-max-length 72))
-
-(map! "C-c o" #'browse-url-at-point)
-
-(setq delete-by-moving-to-trash t)
-
-(custom-set-faces!
-  '(fixed-pitch :height 1.0 :family nil))
-
-(setq-default org-startup-indented t
-              org-pretty-entities t
-              org-use-sub-superscripts "{}"
-              org-hide-emphasis-markers t
-              org-startup-with-inline-images t
-              org-image-actual-width '(300))
+(after! noctalia-theme
+  (custom-theme-set-faces! 'noctalia
+    '(fixed-pitch :inherit default)))
 
 (after! org
   (require 'org-superstar)
@@ -130,6 +140,17 @@
         org-appear-autokeywords t
         org-appear-trigger 'manual)
 
+  (custom-set-faces!
+    '(org-document-title :height 1.0 :bold t :underline nil)
+    '(org-level-1 :inherit outline-1 :height 1.0)
+    '(org-level-2 :inherit outline-2 :height 1.0)
+    '(org-level-3 :inherit outline-3 :height 1.0)
+    '(org-level-4 :inherit outline-3 :height 1.0)
+    '(org-level-5 :inherit outline-3 :height 1.0)
+    '(org-level-6 :inherit outline-3 :height 1.0)
+    '(org-level-7 :inherit outline-3 :height 1.0)
+    '(org-level-8 :inherit outline-3 :height 1.0))
+
   (add-hook 'org-mode-hook #'org-superstar-mode)
   (add-hook 'org-mode-hook #'org-appear-mode)
 
@@ -139,6 +160,9 @@
 
   (add-hook 'org-mode-hook #'+org-appear-setup))
 
+(after! treemacs
+  (define-key treemacs-mode-map [mouse-1]
+              #'treemacs-single-click-expand-action))
 
-(setq +evil-want-o/O-to-continue-comments nil)
-(setq +default-want-RET-continue-comments nil)
+(after! git-commit
+  (setq git-commit-summary-max-length 72))
