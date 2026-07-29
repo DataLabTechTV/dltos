@@ -110,6 +110,9 @@
 
 ;; Packages
 
+(require 'keychain-environment)
+(keychain-refresh-environment)
+
 (after! emacs
   (setq mouse-wheel-progressive-speed nil
         mouse-wheel-scroll-amount '(3))
@@ -120,9 +123,6 @@
 
   (global-set-key (kbd "<M-wheel-down>")
                   (lambda () (interactive) (scroll-up 10))))
-
-(after! keychain-environment
-  (keychain-refresh-environment))
 
 (after! noctalia-theme
   (custom-theme-set-faces! 'noctalia
