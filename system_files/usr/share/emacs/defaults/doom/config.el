@@ -110,8 +110,9 @@
 
 ;; Packages
 
-(require 'keychain-environment)
-(keychain-refresh-environment)
+(use-package! keychain-environment
+  :config
+  (keychain-refresh-environment))
 
 (after! emacs
   (setq mouse-wheel-progressive-speed nil
