@@ -107,7 +107,7 @@ install_ai_tools() {
 }
 
 install_data_tools() {
-    dnf5 -y install jq yq sqlite3 miller gnuplot parallel xxd
+    dnf5 -y install jq yq sqlite3 miller gnuplot parallel xxd xmlstarlet
     uv tool install termgraph
     uv tool install visidata
     go install github.com/IllumiKnowLabs/labstore/cmd/labstore@v0.1.0
