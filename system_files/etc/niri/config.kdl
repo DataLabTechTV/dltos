@@ -209,6 +209,13 @@ window-rule {
 }
 
 window-rule {
+    match app-id="md.Obsidian"
+    open-maximized true
+    opacity 0.9
+    background-effect { blur true; }
+}
+
+window-rule {
     match app-id="emacs"
     default-column-width { proportion 0.66667; }
     background-effect { blur true; }
