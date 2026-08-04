@@ -160,6 +160,13 @@
 
   (add-hook 'org-mode-hook #'+org-appear-setup))
 
+(after! sh-script
+  (defun +sh-mode-bash ()
+      (when (and (buffer-file-name)
+                 (not (file-exists-p (buffer-file-name))))
+        (sh-set-shell "bash")))
+  (add-hook 'sh-mode-hook #'+sh-mode-bash))
+
 (after! treemacs
   (define-key treemacs-mode-map [mouse-1] #'treemacs-single-click-expand-action))
 
