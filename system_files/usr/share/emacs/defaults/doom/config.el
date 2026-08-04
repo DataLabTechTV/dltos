@@ -91,8 +91,7 @@
               org-pretty-entities t
               org-use-sub-superscripts "{}"
               org-hide-emphasis-markers t
-              org-startup-with-inline-images t
-              org-image-actual-width '(300))
+              org-startup-with-inline-images nil)
 
 (set-frame-parameter nil 'alpha-background 85)
 (add-to-list 'default-frame-alist '(alpha-background . 85))
