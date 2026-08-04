@@ -161,8 +161,7 @@
   (add-hook 'org-mode-hook #'+org-appear-setup))
 
 (after! treemacs
-  (define-key treemacs-mode-map [mouse-1]
-              #'treemacs-single-click-expand-action))
+  (define-key treemacs-mode-map [mouse-1] #'treemacs-single-click-expand-action))
 
 (after! git-commit
   (setq git-commit-summary-max-length 72))
