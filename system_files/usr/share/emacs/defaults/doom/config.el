@@ -83,8 +83,8 @@
 
 (setq delete-by-moving-to-trash t
       +evil-want-o/O-to-continue-comments nil
-      +default-want-RET-continue-comments nil)
-
+      +default-want-RET-continue-comments nil
+      projectile-enable-caching nil)
 
 (setq-default fill-column 120
               org-startup-indented t
