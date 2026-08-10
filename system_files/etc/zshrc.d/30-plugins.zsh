@@ -46,6 +46,6 @@ if command -v keychain >/dev/null 2>&1; then
     ssh_keys=($HOME/.ssh/*.pub(N))
 
     if ((${#ssh_keys[@]} > 0)); then
-        eval "$(keychain --quiet --eval ${ssh_keys[@]%.pub})"
+        eval "$(keychain add --eval --quiet --immediate ${ssh_keys[@]%.pub})"
     fi
 fi
