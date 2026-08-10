@@ -72,7 +72,7 @@ install_graphics_tools() {
 }
 
 install_doc_tools() {
-    dnf5 -y install pandoc
+    dnf5 -y install pandoc texlive-scheme-medium
 }
 
 install_dev_tools() {
