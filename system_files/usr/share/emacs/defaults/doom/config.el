@@ -1,14 +1,15 @@
 
 ;; Variables
 
+(setq-default fill-column 120
+              display-line-numbers-type 'relative)
+
 (setq doom-font (font-spec :family "FantasqueSansM Nerd Font" :size 18 :weight 'regular)
       doom-big-font (font-spec :family "FantasqueSansM Nerd Font" :size 36 :weight 'regular)
       doom-theme 'doom-rose-pine-moon
 
       org-directory "~/org/"
 
-      fill-column 120
-      display-line-numbers-type 'relative
       browse-url-browser-function 'browse-url-xdg-open
 
       delete-by-moving-to-trash t
