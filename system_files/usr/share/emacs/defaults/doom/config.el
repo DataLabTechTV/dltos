@@ -57,6 +57,13 @@
   (require 'org-appear)
   (require 'org-re-reveal)
 
+  (defun +org-capture-at-end-of-ideas ()
+    "Position point at the end of the last top-level IDEA subtree."
+    (goto-char (point-max))
+    (when (re-search-backward "^\\* IDEA\\b" nil t)
+      (org-end-of-subtree))
+    (point))
+
   (setq org-pretty-entities t
         org-use-sub-superscripts "{}"
         org-hide-emphasis-markers t
@@ -100,13 +107,34 @@
            (file ,(expand-file-name "admin/log.org" org-directory))
            "* %u\n%?"
            :prepend t
-           :empty-lines 1)
+           :empty-lines-before 1
+           :empty-lines-after 1)
 
           ("j" "Journal" entry
            (file+olp+datetree ,(expand-file-name "admin/journal.org" org-directory))
            "* %?\nEntered on %U\n")
-          )
-        )
+
+          ("v" "Video" plain
+           (file+function
+            ,(expand-file-name "content/videos.org" org-directory)
+            +org-capture-at-end-of-ideas)
+           (file ,(expand-file-name "templates/videos.org" org-directory))
+           :empty-lines-before 1
+           :empty-lines-after 1)
+
+          ("r" "Research")
+
+          ("rb" "Research books" plain
+           (file ,(expand-file-name "research/books.org" org-directory))
+           (file ,(expand-file-name "templates/research-books.org" org-directory))
+           :empty-lines-before 1
+           :empty-lines-after 1)
+
+          ("rw" "Research web" plain
+           (file ,(expand-file-name "research/web.org" org-directory))
+           (file ,(expand-file-name "templates/research-web.org" org-directory))
+           :empty-lines-before 1
+           :empty-lines-after 1)))
 
   (custom-set-faces!
     '(org-document-title :height 1.0 :bold t :underline nil)
