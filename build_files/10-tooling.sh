@@ -117,6 +117,10 @@ install_data_tools() {
     chmod +x /usr/bin/duckdb
 }
 
+install_backup_tools() {
+    dnf5 -y install borgbackup
+}
+
 setup_rpmfusion
 install_language_tools
 install_fonts
@@ -129,3 +133,4 @@ install_dev_tools
 install_container_tools
 install_ai_tools
 install_data_tools
+install_backup_tools
