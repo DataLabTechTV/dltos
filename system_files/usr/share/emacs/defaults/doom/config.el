@@ -4,8 +4,8 @@
 (setq-default fill-column 120
               display-line-numbers-type 'relative)
 
-(setq doom-font (font-spec :family "FantasqueSansM Nerd Font" :size 18 :weight 'regular)
-      doom-big-font (font-spec :family "FantasqueSansM Nerd Font" :size 36 :weight 'regular)
+(setq doom-font (font-spec :family "FantasqueSansM Nerd Font Mono" :size 18 :weight 'regular)
+      doom-big-font (font-spec :family "FantasqueSansM Nerd Font Mono" :size 36 :weight 'regular)
       doom-theme 'doom-rose-pine-moon
 
       org-directory "~/org/"
@@ -55,21 +55,58 @@
 (after! org
   (require 'org-superstar)
   (require 'org-appear)
+  (require 'org-re-reveal)
 
   (setq org-pretty-entities t
         org-use-sub-superscripts "{}"
         org-hide-emphasis-markers t
+        org-ellipsis " ▾ "
+
         org-startup-indented t
         org-startup-with-inline-images nil
         org-startup-align-all-tables t
         org-startup-folded 'content
+
         org-appear-autolinks t
         org-appear-autoemphasis t
         org-appear-autosubmarkers t
         org-appear-autoentities t
         org-appear-inside-latex t
         org-appear-autokeywords t
-        org-appear-trigger 'manual)
+        org-appear-trigger 'manual
+        org-re-reveal-margin "0.15"
+
+        org-latex-compiler "xelatex"
+
+        org-export-headline-levels 4
+
+        org-re-reveal-root (expand-file-name "assets/reveal.js/" doom-user-dir)
+        org-re-reveal-extra-css (expand-file-name "assets/reveal.css" doom-user-dir)
+        org-re-reveal-revealjs-version "6"
+        org-re-reveal-theme "serif"
+        org-re-reveal-width 1024
+        org-re-reveal-height 768
+        org-re-reveal-single-file t
+        org-re-reveal-subtree-with-title-slide nil
+
+        org-capture-templates
+        `(("t", "To Do" entry
+           (file ,(expand-file-name "admin/todo.org" org-directory))
+           "* TODO %?"
+           :prepend t
+           :empty-lines-before 1)
+
+          ("l" "Log" entry
+           (file ,(expand-file-name "admin/log.org" org-directory))
+           "* %u\n%?"
+           :prepend t
+           :empty-lines 1)
+
+          ("j" "Journal" entry
+           (file+olp+datetree ,(expand-file-name "admin/journal.org" org-directory))
+           "* %?\nEntered on %U\n")
+          )
+        )
 
   (custom-set-faces!
     '(org-document-title :height 1.0 :bold t :underline nil)
@@ -90,6 +127,17 @@
     (add-hook 'evil-insert-state-exit-hook #'org-appear-manual-stop nil t))
 
   (add-hook 'org-mode-hook #'+org-appear-setup))
+
+(after! ox
+  (defvar +org-export-dir (expand-file-name "~/Desktop/org-export/"))
+
+  (advice-add
+   'org-export-output-file-name
+   :filter-args
+   (lambda (args)
+     (unless (file-directory-p +org-export-dir)
+       (make-directory +org-export-dir t))
+     (list (nth 0 args) (nth 1 args) +org-export-dir))))
 
 (after! sh-script
   (defun +sh-mode-bash ()

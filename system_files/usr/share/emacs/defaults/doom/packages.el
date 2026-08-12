@@ -59,3 +59,4 @@
 (package! nftables-mode)
 (package! org-superstar)
 (package! org-appear)
+(package! org-re-reveal)
