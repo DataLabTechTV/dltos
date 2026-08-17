@@ -97,18 +97,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Configure Containers Storage
-        run: |
-          sudo mkdir -p /etc/containers
-          cat <<'EOF' | sudo tee /etc/containers/storage.conf
-          [storage]
-          driver = "overlay"
-          graphroot = "/var/lib/containers/storage"
-          runroot = "/run/containers/storage"
-          [storage.options.overlay]
-          mountopt = "nodev,metacopy=off"
-          EOF
-
       - name: Restore Buildah Cache
         uses: actions/cache/restore@v5
         with:
@@ -161,7 +149,6 @@ jobs:
           sudo buildah commit --identity-label=false --rm $container raw-img
 
           sudo podman run --rm --privileged \
-            --volume /etc/containers/storage.conf:/etc/containers/storage.conf:ro \
             --volume /var/lib/containers:/var/lib/containers \
             quay.io/centos-bootc/centos-bootc:stream10 \
             rpm-ostree compose build-chunked-oci \
