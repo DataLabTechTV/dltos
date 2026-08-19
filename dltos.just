@@ -1,4 +1,4 @@
-term_width := `tput cols`
+term_width := `tput cols 2>/dev/null || echo 120`
 delta := "delta --side-by-side --paging=never --width=" + term_width
 
 # (Re)generates the fastfetch ASCII logo from an image
