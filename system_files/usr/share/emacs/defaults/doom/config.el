@@ -247,6 +247,9 @@
         (sh-set-shell "bash")))
   (add-hook 'sh-mode-hook #'dlt/sh-mode-bash))
 
+(after! just-mode
+  (add-to-list 'auto-mode-alist '("\\.just\\'" . just-mode)))
+
 (after! treemacs
   (define-key treemacs-mode-map [mouse-1] #'treemacs-single-click-expand-action))
 
