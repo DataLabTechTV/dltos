@@ -60,3 +60,4 @@
 (package! org-superstar)
 (package! org-appear)
 (package! org-re-reveal)
+(package! systemd)
