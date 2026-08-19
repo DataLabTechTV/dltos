@@ -86,6 +86,7 @@
         org-latex-compiler "xelatex"
 
         org-export-headline-levels 4
+        org-export-initial-scope 'subtree
 
         org-re-reveal-root (expand-file-name "assets/reveal.js/" doom-user-dir)
         org-re-reveal-extra-css (expand-file-name "assets/reveal.css" doom-user-dir)
