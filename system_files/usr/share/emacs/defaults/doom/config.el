@@ -151,11 +151,11 @@
   (add-hook 'org-mode-hook #'org-superstar-mode)
   (add-hook 'org-mode-hook #'org-appear-mode)
 
-  (defun +org-appear-setup ()
+  (defun dlt/org-appear-setup ()
     (add-hook 'evil-insert-state-entry-hook #'org-appear-manual-start nil t)
     (add-hook 'evil-insert-state-exit-hook #'org-appear-manual-stop nil t))
 
-  (add-hook 'org-mode-hook #'+org-appear-setup))
+  (add-hook 'org-mode-hook #'dlt/org-appear-setup))
 
 (after! ox
   (defvar +org-export-dir (expand-file-name "~/Desktop/org-export/"))
@@ -169,11 +169,11 @@
      (list (nth 0 args) (nth 1 args) +org-export-dir))))
 
 (after! sh-script
-  (defun +sh-mode-bash ()
+  (defun dlt/sh-mode-bash ()
       (when (and (buffer-file-name)
                  (not (file-exists-p (buffer-file-name))))
         (sh-set-shell "bash")))
-  (add-hook 'sh-mode-hook #'+sh-mode-bash))
+  (add-hook 'sh-mode-hook #'dlt/sh-mode-bash))
 
 (after! treemacs
   (define-key treemacs-mode-map [mouse-1] #'treemacs-single-click-expand-action))
