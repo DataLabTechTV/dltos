@@ -2,7 +2,7 @@
 ;; Variables
 
 (setq-default fill-column 120
-              display-line-numbers-type 'relative)
+              display-line-numbers-type t)
 
 (setq doom-font (font-spec :family "FantasqueSansM Nerd Font Mono" :size 18 :weight 'regular)
       doom-big-font (font-spec :family "FantasqueSansM Nerd Font Mono" :size 36 :weight 'regular)
