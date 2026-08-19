@@ -25,6 +25,18 @@
 
 (map! "C-c o" #'browse-url-at-point)
 
+(map! :leader
+      :prefix ("n T" . "templates")
+
+      :desc "Insert video template"
+      "v" #'dlt/org-insert-video-template
+
+      :desc "Insert book template"
+      "b" #'dlt/org-insert-book-template
+
+      :desc "Insert web template"
+      "w" #'dlt/org-insert-web-template)
+
 
 ;; Hooks
 
@@ -57,12 +69,60 @@
   (require 'org-appear)
   (require 'org-re-reveal)
 
-  (defun +org-capture-at-end-of-ideas ()
-    "Position point at the end of the last top-level IDEA subtree."
+  (defun dlt/org-capture-after-last (keyword)
+    "Position point at the end of the last top-level todo keyword subtree."
     (goto-char (point-max))
-    (when (re-search-backward "^\\* IDEA\\b" nil t)
+    (when (re-search-backward (format "^\\* %s\\b" keyword) nil t)
       (org-end-of-subtree))
     (point))
+
+  (defun dlt/org-insert-template-file (filename)
+    "Insert and process an org template file."
+    (interactive
+     (list
+      (completing-read
+       "Template: "
+       (directory-files
+        (expand-file-name "templates" org-directory)
+        nil
+        "\\.org\\'")
+       nil
+       t)))
+    (let* ((level (or (org-current-level) 0))
+           (template
+            (with-temp-buffer
+              (insert-file-contents
+               (expand-file-name
+                filename
+                (expand-file-name "templates" org-directory)))
+              (buffer-string)))
+           (template (org-capture-fill-template template)))
+      (insert
+       (with-temp-buffer
+         (insert template)
+         (goto-char (point-min))
+         (while (re-search-forward "^\\(\\*+\\) " nil t)
+           (replace-match
+            (concat (make-string level ?*)
+                    (match-string 1)
+                    " ")
+            t))
+         (buffer-string)))))
+
+  (defun dlt/org-insert-video-template ()
+    "Insert and process the video template."
+    (interactive)
+    (dlt/org-insert-template-file "video.org"))
+
+  (defun dlt/org-insert-book-template ()
+    "Insert and process the book template."
+    (interactive)
+    (dlt/org-insert-template-file "book.org"))
+
+  (defun dlt/org-insert-web-template ()
+    "Insert and process the web template."
+    (interactive)
+    (dlt/org-insert-template-file "web.org"))
 
   (setq org-pretty-entities t
         org-use-sub-superscripts "{}"
@@ -112,28 +172,36 @@
            :empty-lines-after 1)
 
           ("j" "Journal" entry
-           (file+olp+datetree ,(expand-file-name "admin/journal.org" org-directory))
+           (file+olp+datetree ,(expand-file-name "admin/journal.org.gpg" org-directory))
            "* %?\nEntered on %U\n")
 
-          ("v" "Video" plain
+          ("v" "Video")
+
+          ("vi" "Video Idea" plain
            (file+function
             ,(expand-file-name "content/videos.org" org-directory)
-            +org-capture-at-end-of-ideas)
-           (file ,(expand-file-name "templates/videos.org" org-directory))
-           :empty-lines-before 1
-           :empty-lines-after 1)
+            (lambda () (dlt/org-capture-after-last "IDEA")))
+           "* IDEA %?"
+           :empty-lines-before 1)
+
+          ("vt" "Video To Do" plain
+           (file+function
+            ,(expand-file-name "content/videos.org" org-directory)
+            (lambda () (dlt/org-capture-after-last "TODO")))
+           "* TODO %?"
+           :empty-lines-before 1)
 
           ("r" "Research")
 
-          ("rb" "Research books" plain
+          ("rb" "Research Book" plain
            (file ,(expand-file-name "research/books.org" org-directory))
-           (file ,(expand-file-name "templates/research-books.org" org-directory))
+           (file ,(expand-file-name "templates/book.org" org-directory))
            :empty-lines-before 1
            :empty-lines-after 1)
 
-          ("rw" "Research web" plain
+          ("rw" "Research Web" plain
            (file ,(expand-file-name "research/web.org" org-directory))
-           (file ,(expand-file-name "templates/research-web.org" org-directory))
+           (file ,(expand-file-name "templates/web.org" org-directory))
            :empty-lines-before 1
            :empty-lines-after 1)))
 
