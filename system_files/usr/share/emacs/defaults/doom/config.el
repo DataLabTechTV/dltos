@@ -168,6 +168,10 @@
        (make-directory +org-export-dir t))
      (list (nth 0 args) (nth 1 args) +org-export-dir))))
 
+(after! epa
+  (setq epa-file-encrypt-to '("your.email@example.com"))
+  (setq epa-file-select-keys 'silent))
+
 (after! sh-script
   (defun dlt/sh-mode-bash ()
       (when (and (buffer-file-name)
