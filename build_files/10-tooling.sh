@@ -73,7 +73,8 @@ install_graphics_tools() {
 
 install_doc_tools() {
     dnf5 -y install pandoc texlive-scheme-basic texlive-collection-latexextra \
-        texlive-collection-fontsrecommended texlive-collection-langportuguese
+        texlive-collection-fontsrecommended texlive-collection-langportuguese \
+        texlive-dvipng
 }
 
 install_dev_tools() {
