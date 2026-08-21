@@ -4,8 +4,8 @@
 (setq-default fill-column 120
               display-line-numbers-type t)
 
-(setq doom-font (font-spec :family "FantasqueSansM Nerd Font Mono" :size 18 :weight 'regular)
-      doom-big-font (font-spec :family "FantasqueSansM Nerd Font Mono" :size 36 :weight 'regular)
+(setq doom-font (font-spec :family "FantasqueSansM Nerd Font Mono" :size 13.5 :weight 'regular)
+      doom-big-font (font-spec :family "FantasqueSansM Nerd Font Mono" :size 28.0 :weight 'regular)
       doom-theme 'doom-rose-pine-moon
 
       org-directory "~/org/"
@@ -16,6 +16,9 @@
 
       +evil-want-o/O-to-continue-comments nil
       +default-want-RET-continue-comments nil)
+
+(add-to-list 'face-font-rescale-alist '("Noto Color Emoji" . 0.85))
+(set-fontset-font t 'emoji (font-spec :family "Noto Color Emoji" :spacing 100) nil 'prepend)
 
 (set-frame-parameter nil 'alpha-background 85)
 (add-to-list 'default-frame-alist '(alpha-background . 85))
@@ -49,10 +52,16 @@
   :config
   (keychain-refresh-environment))
 
+(use-package org-table-wrap-functions
+  :load-path
+  (lambda ()
+    (expand-file-name
+     ".local/straight/repo/org-table-wrap-functions"
+     doom-emacs-dir)))
+
 (after! emacs
   (setq mouse-wheel-progressive-speed nil
         mouse-wheel-scroll-amount '(3))
-
 
   (global-set-key (kbd "<M-wheel-up>")
                   (lambda () (interactive) (scroll-down 10)))
@@ -68,6 +77,10 @@
   (require 'org-superstar)
   (require 'org-appear)
   (require 'org-re-reveal)
+
+  (defun dlt/org-appear-setup ()
+    (add-hook 'evil-insert-state-entry-hook #'org-appear-manual-start nil t)
+    (add-hook 'evil-insert-state-exit-hook #'org-appear-manual-stop nil t))
 
   (defun dlt/org-capture-after-last (keyword)
     "Position point at the end of the last top-level todo keyword subtree."
@@ -129,6 +142,10 @@
         org-hide-emphasis-markers t
         org-ellipsis " ▾ "
 
+        org-agenda-files
+        (list
+         (expand-file-name "admin/todo.org" org-directory))
+
         org-startup-indented t
         org-startup-with-inline-images nil
         org-startup-align-all-tables t
@@ -141,9 +158,11 @@
         org-appear-inside-latex t
         org-appear-autokeywords t
         org-appear-trigger 'manual
+
         org-re-reveal-margin "0.15"
 
-        org-latex-compiler "xelatex"
+        org-latex-compiler "lualatex"
+        org-preview-latex-default-process 'lualatex
 
         org-export-headline-levels 4
         org-export-initial-scope 'subtree
@@ -216,14 +235,26 @@
     '(org-level-7 :inherit outline-3 :height 1.0)
     '(org-level-8 :inherit outline-3 :height 1.0))
 
-  (add-hook 'org-mode-hook #'org-superstar-mode)
-  (add-hook 'org-mode-hook #'org-appear-mode)
+  (add-to-list 'org-latex-packages-alist '("" "amsmath" t))
+  (add-to-list 'org-latex-packages-alist '("" "amssymb" t))
 
-  (defun dlt/org-appear-setup ()
-    (add-hook 'evil-insert-state-entry-hook #'org-appear-manual-start nil t)
-    (add-hook 'evil-insert-state-exit-hook #'org-appear-manual-stop nil t))
+  (add-to-list
+   'org-preview-latex-process-alist
+   '(lualatex
+     :programs ("lualatex" "convert")
+     :description "LuaLaTeX + ImageMagick (PDF to PNG)"
+     :message "You need to install lualatex and imagemagick."
+     :image-input-type "pdf"
+     :image-output-type "png"
+     :image-size-adjust (0.99 . 0.99)
+     :latex-compiler ("lualatex -interaction=nonstopmode -output-format=pdf -output-directory=%o %f")
+     :image-converter ("convert -density %D %f -trim +repage -antialias -quality 100 %O")))
 
-  (add-hook 'org-mode-hook #'dlt/org-appear-setup))
+  (add-hook!
+   'org-mode-hook
+   #'org-superstar-mode
+   #'org-appear-mode
+   #'dlt/org-appear-setup))
 
 (after! ox
   (defvar +org-export-dir (expand-file-name "~/Desktop/org-export/"))
@@ -235,6 +266,18 @@
      (unless (file-directory-p +org-export-dir)
        (make-directory +org-export-dir t))
      (list (nth 0 args) (nth 1 args) +org-export-dir))))
+
+(after! ox-latex
+  (add-to-list 'org-latex-classes
+               '("article"
+                 "\\documentclass{article}
+\\usepackage[left=1.5cm,right=1.5cm,top=1.5cm,bottom=3cm]{geometry}
+\\usepackage{fontspec}
+\\directlua{luaotfload.add_fallback(\"emoji\", {\"Noto Emoji:mode=harf\"})}
+\\setmainfont{Latin Modern Roman}[RawFeature={fallback=emoji}]"
+                 ("\\section{%s}" . "\\section*{%s}")
+                 ("\\subsection{%s}" . "\\subsection*{%s}")
+                 ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))))
 
 (after! epa
   (setq epa-file-encrypt-to '("your.email@example.com"))

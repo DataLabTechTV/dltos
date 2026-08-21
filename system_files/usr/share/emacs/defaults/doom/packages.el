@@ -61,3 +61,5 @@
 (package! org-appear)
 (package! org-re-reveal)
 (package! systemd)
+(package! org-table-wrap-to-width
+  :recipe (:host github :repo "analyticd/org-table-wrap-functions"))
