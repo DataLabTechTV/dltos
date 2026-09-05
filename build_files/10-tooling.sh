@@ -13,7 +13,7 @@ ENV_DIR="$(dirname "${BASH_SOURCE[0]}")"
 # shellcheck source=/dev/null
 . "$ENV_DIR/uv-env.sh"
 
-setup_rpmfusion() {
+setup_extra_repos() {
     rpm --import \
         "/usr/share/distribution-gpg-keys/rpmfusion/RPM-GPG-KEY-rpmfusion-free-fedora-$(rpm -E %fedora)" \
         "/usr/share/distribution-gpg-keys/rpmfusion/RPM-GPG-KEY-rpmfusion-nonfree-fedora-$(rpm -E %fedora)"
@@ -23,6 +23,9 @@ setup_rpmfusion() {
         "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm"
 
     dnf5 config-manager disable 'rpmfusion-*'
+
+    curl -1sLf 'https://dl.cloudsmith.io/public/tofuutils/tenv/cfg/setup/bash.rpm.sh' | bash
+    dnf5 config-manager disable 'tofuutils-tenv*'
 }
 
 install_language_tools() {
@@ -77,6 +80,14 @@ install_doc_tools() {
         texlive-dvipng
 }
 
+install_container_tools() {
+    dnf5 -y install docker-cli docker-compose-switch oci-seccomp-bpf-hook cosign
+    mv /usr/bin/docker /usr/bin/docker.real
+    mv /usr/bin/docker-compose /usr/bin/docker-compose.real
+
+    go install github.com/jesseduffield/lazydocker@latest
+}
+
 install_dev_tools() {
     dnf5 -y copr enable dejan/lazygit
     dnf5 -y install lazygit
@@ -87,17 +98,11 @@ install_dev_tools() {
 
     dnf5 -y --enable-repo=terra install zed
     dnf5 -y install emacs-pgtk libvterm-devel libtool
-    dnf5 -y install pre-commit cloc git-delta
+
+    dnf5 -y --enable-repo=tofuutils-tenv tenv
+    dnf5 -y install pre-commit cloc git-delta ansible
+
     go install github.com/gohugoio/hugo@v0.111.3
-}
-
-install_container_tools() {
-    dnf5 -y install docker-cli docker-compose-switch oci-seccomp-bpf-hook
-    mv /usr/bin/docker /usr/bin/docker.real
-    mv /usr/bin/docker-compose /usr/bin/docker-compose.real
-
-    go install github.com/jesseduffield/lazydocker@latest
-    go install github.com/sigstore/cosign/v3/cmd/cosign@latest
 }
 
 install_ai_tools() {
@@ -122,7 +127,7 @@ install_backup_tools() {
     dnf5 -y install borgbackup
 }
 
-setup_rpmfusion
+setup_extra_repos
 install_language_tools
 install_fonts
 install_shell_tools
@@ -130,8 +135,8 @@ install_network_tools
 install_mail_tools
 install_graphics_tools
 install_doc_tools
-install_dev_tools
 install_container_tools
+install_dev_tools
 install_ai_tools
 install_data_tools
 install_backup_tools
