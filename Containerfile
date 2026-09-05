@@ -13,7 +13,7 @@ RUN zsh /antidote/antidote bundle < /tmp/zsh_plugins.txt > ${ANTIDOTE_HOME}/plug
 
 # FROM ghcr.io/ublue-os/bazzite-nvidia-open:stable
 # FROM ghcr.io/ublue-os/bazzite-nvidia-open:stable-44.20260825
-FROM ghcr.io/ublue-os/bazzite-nvidia-open:testing-44.20260904
+FROM ghcr.io/ublue-os/bazzite-nvidia-open:testing-44.20260904@sha256:47357a1b70537e81b6d1a7af0e708d39b636abbcc179bb4d8c383ea459f97bf6
 
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/cache/libdnf5 \
