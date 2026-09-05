@@ -96,17 +96,9 @@ install_dev_tools() {
     dnf5 -y --enable-repo=terra install zed
     dnf5 -y install emacs-pgtk libvterm-devel libtool
 
-    dnf5 -y install pre-commit cloc git-delta ansible
+    dnf5 -y install pre-commit cloc git-delta ansible opentofu
 
     go install github.com/gohugoio/hugo@v0.111.3
-
-    tenv_tmpdir=$(mktemp -d)
-    trap 'rm -rfv "${tenv_tmpdir}"' EXIT
-
-    tenv_version="$(curl https://api.github.com/repos/tofuutils/tenv/releases/latest | jq -r .tag_name)"
-    tenv_url="https://github.com/tofuutils/tenv/releases/download/v4.15.1/tenv_${tenv_version}_Linux_x86_64.tar.gz"
-    curl -fL "$tenv_url" -o - | tar xvzf - -C "$tenv_tmpdir"
-    find "$tenv_tmpdir" -type f -exec file {} + | grep -w ELF | cut -d: -f1 | xargs -I{} mv -v '{}' /usr/bin
 }
 
 install_ai_tools() {
