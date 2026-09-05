@@ -23,9 +23,6 @@ setup_extra_repos() {
         "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm"
 
     dnf5 config-manager disable 'rpmfusion-*'
-
-    curl -1sLf 'https://dl.cloudsmith.io/public/tofuutils/tenv/cfg/setup/bash.rpm.sh' | bash
-    dnf5 config-manager disable 'tofuutils-tenv*'
 }
 
 install_language_tools() {
@@ -39,8 +36,8 @@ install_fonts() {
 }
 
 install_shell_tools() {
-    url="https://github.com/michel-kraemer/zsh-patina/releases/download/1.8.0/zsh-patina-v1.8.0-x86_64-unknown-linux-gnu.tar.gz"
-    tmpdir=$(mktemp -d)
+    url='https://github.com/michel-kraemer/zsh-patina/releases/download/1.8.0/zsh-patina-v1.8.0-x86_64-unknown-linux-gnu.tar.gz'
+    tmpdir="$(mktemp -d)"
     curl -L "$url" -o - | tar xvzf - -C "$tmpdir" --strip-components=1
     cp "$tmpdir/zsh-patina" /usr/bin
     cp "$tmpdir/completion/_zsh-patina" /usr/share/zsh/site-functions
@@ -99,17 +96,24 @@ install_dev_tools() {
     dnf5 -y --enable-repo=terra install zed
     dnf5 -y install emacs-pgtk libvterm-devel libtool
 
-    dnf5 -y --enable-repo=tofuutils-tenv tenv
     dnf5 -y install pre-commit cloc git-delta ansible
 
     go install github.com/gohugoio/hugo@v0.111.3
+
+    tenv_tmpdir=$(mktemp -d)
+    trap 'rm -rfv "${tenv_tmpdir}"' EXIT
+
+    tenv_version="$(curl https://api.github.com/repos/tofuutils/tenv/releases/latest | jq -r .tag_name)"
+    tenv_url="https://github.com/tofuutils/tenv/releases/download/v4.15.1/tenv_${tenv_version}_Linux_x86_64.tar.gz"
+    curl -fL "$tenv_url" -o - | tar xvzf - -C "$tenv_tmpdir"
+    find "$tenv_tmpdir" -type f -exec file {} + | grep -w ELF | cut -d: -f1 | xargs -I{} mv -v '{}' /usr/bin
 }
 
 install_ai_tools() {
     uv tool install ramalama
 
-    clampdown_url=https://github.com/89luca89/clampdown/releases/download/v0.1/clampdown-linux-amd64
-    clampdown_bin=/usr/bin/clampdown
+    clampdown_url='https://github.com/89luca89/clampdown/releases/download/v0.1/clampdown-linux-amd64'
+    clampdown_bin='/usr/bin/clampdown'
     curl -fL $clampdown_url -o $clampdown_bin && chmod +x $clampdown_bin
 }
 
