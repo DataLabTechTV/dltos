@@ -2,8 +2,6 @@
 
 set -euxo pipefail
 
-dnf5 versionlock add 'qt6-*' 'plasma-*'
-
 dnf5 -y remove fw-fanctrl
 dnf5 -y install zsh
 dnf5 -y install kitty
@@ -17,4 +15,4 @@ dnf5 -y copr enable yalter/niri
 dnf5 -y install niri
 dnf5 -y copr disable yalter/niri
 
-dnf5 -y --enable-repo=terra install noctalia-legacy
+dnf5 -y install noctalia
