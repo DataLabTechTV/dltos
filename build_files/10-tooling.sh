@@ -33,6 +33,7 @@ install_language_tools() {
 
 install_fonts() {
     # dnf5 -y --enable-repo=terra install cascadiacode-nerd-fonts cascadiamono-nerd-fonts
+    return 0
 }
 
 install_shell_tools() {
