@@ -279,6 +279,11 @@ window-rule {
 }
 
 window-rule {
+  match app-id="vesktop"
+  open-maximized true
+}
+
+window-rule {
     match app-id="steam"
     open-maximized true
 }
@@ -321,14 +326,14 @@ debug {
 binds {
     // --- Global ---
     Mod+Shift+E { quit; }
-    Mod+B repeat=false { spawn "qs" "-c" "noctalia-shell" "ipc" "call" "bar" "toggle"; }
-    Mod+Shift+S repeat=false { spawn "qs" "-c" "noctalia-shell" "ipc" "call" "sessionMenu" "toggle"; }
-    Mod+Space repeat=false { spawn "qs" "-c" "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
-    Mod+D repeat=false { spawn "qs" "-c" "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
-    Mod+N repeat=false { spawn "qs" "-c" "noctalia-shell" "ipc" "call" "notifications" "toggleHistory"; }
-    Mod+Ctrl+V repeat=false { spawn "qs" "-c" "noctalia-shell" "ipc" "call" "volume" "togglePanel"; }
-    Mod+Period repeat=false { spawn "qs" "-c" "noctalia-shell" "ipc" "call" "launcher" "emoji"; }
-    Mod+Shift+Period repeat=false { spawn "qs" "-c" "noctalia-shell" "ipc" "call" "plugin:unicode" "toggle"; }
+    Mod+B repeat=false { spawn "noctalia" "msg" "bar-toggle"; }
+    Mod+Shift+S repeat=false { spawn "noctalia" "msg" "panel-toggle" "session"; }
+    Mod+Space repeat=false { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
+    Mod+D repeat=false { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
+    Mod+N repeat=false { spawn "noctalia" "msg" "panel-toggle" "control-center" "notifications"; }
+    Mod+Ctrl+V repeat=false { spawn "noctalia" "msg" "panel-toggle" "control-center" "audio"; }
+    Mod+Period repeat=false { spawn "noctalia" "msg" "panel-toggle" "launcher" "/emo "; }
+    // Mod+Shift+Period repeat=false { spawn "qs" "-c" "noctalia-shell" "ipc" "call" "plugin:unicode" "toggle"; }
 
     // --- Apps ---
     Mod+Return cooldown-ms=500 { spawn "kitty" "-d" "~"; }
