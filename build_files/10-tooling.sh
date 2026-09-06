@@ -32,7 +32,7 @@ install_language_tools() {
 }
 
 install_fonts() {
-    dnf5 -y --enable-repo=terra install cascadiacode-nerd-fonts cascadiamono-nerd-fonts
+    # dnf5 -y --enable-repo=terra install cascadiacode-nerd-fonts cascadiamono-nerd-fonts
 }
 
 install_shell_tools() {
@@ -49,7 +49,7 @@ install_shell_tools() {
 
     dnf5 -y install chezmoi direnv keychain zoxide bat ripgrep fd-find eza \
         ncdu age strace btop nvtop tldr trash-cli perl-Image-ExifTool
-    dnf5 -y --enable-repo=terra install yazi
+    # dnf5 -y --enable-repo=terra install yazi
     go install github.com/pranshuparmar/witr/cmd/witr@latest
 }
 
@@ -93,7 +93,7 @@ install_dev_tools() {
     dnf5 -y swap vim-enhanced neovim
     alternatives --install /usr/bin/vim vim /usr/bin/nvim 100
 
-    dnf5 -y --enable-repo=terra install zed
+    # dnf5 -y --enable-repo=terra install zed
     dnf5 -y install emacs-pgtk libvterm-devel libtool
 
     dnf5 -y install pre-commit cloc git-delta ansible opentofu
