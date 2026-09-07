@@ -1,0 +1,2435 @@
+%YAML 1.2
+---
+name             : KDL2
+file_extensions  : [kdl,kdl2]
+scope            : text.kdl.2
+first_line_match : '/-[[:blank:]]*kdl-version[[:blank:]]+2[[:blank:]]*$'
+version          : 2
+extends          : Packages/KDL/KDL2⁄-.sublime-syntax
+# BOM \x{FEFF}? doesnt' seem to be part of a line for re matching, so not added though it's part of the spec
+# See Whitespace (Line breaking and non-Newline) in a separate re_st_engine.sublime-syntax
+
+# !sets don't allow whitespace even with (?x:), so watch out for [{{var}}] where var='(?x: abc)', 'x' will also be included
+  # _digit _char = set-safe [{{var_s}}], i.e. contains only characters, no conditional matching groups
+  # use syntax rules instead of variables that can't be recursive
+  # lookaheads skip meta scopes, so might need to repeat them
+# quote regexes with # : - { [ >
+# Oniguruma regex engine features
+  # rbuckton.github.io/regexp-features/engines/oniguruma.html
+  # raw.githubusercontent.com/kkos/oniguruma/v6.9.1/doc/RE  6.8.0 2018/07/26 (not sure which version ST uses)
+    # github.com/kkos/oniguruma/blob/master/doc/RE (latest)
+# \k<> named group, while \g<> is recursion!
+# include ignores meta patterns in the included contexts
+
+# not all variables have been updated to match v2
+# ident = identifier #⊎=set safe #∪ set safe with exception
+# _var = var rules can't be expressed within literal regexes, e.g., excluding keywords
+variables:
+  # nodes:                	'(?x: {{linesp_re}}*                                     	#
+  #   (?##)               	   ({{node}} {{nodes}}?)?                                	#
+  #   (?##)               	      {{linesp_re}}*                                     	)' #
+  # node:                 	'(?x:                                                    	#
+  #   (?##)               	 (/\- {{n_sp}}*)?                                        	# Slashdash comment
+  #   (?##)               	                       {{type}} ? {{ID}}                 	#
+  #   (?##)               	      ({{n_sp}}+ {{node_prop_or_arg}} )*                 	#
+  #   (?##)               	      ({{n_sp}}* {{node_children}} {{ws}}*)?             	#
+  #   (?##)               	       {{n_sp}}* {{node_terminator}}                     	)' #
+  # node_prop_or_arg:     	'(/\-{{n_sp}}*)?({{prop}}|{{value}})'                    	#
+  # node_children:        	'(/\-{{n_sp}}*)?{{{nodes}}}'                             	#
+  # n_sp:                 	'{{ws}}*{{escline}}{{ws}}*|{{ws}}+'                      	#
+  # node_sp_beg:          	'{{ws_beg}}|{{escline_beg}}'      #⊎                     	#
+  # line_sp_beg:          	'{{ws_beg}}|{{c_line_beg}}|{{nl_s}}'                     	#
+  # any_sp_t_beg:         	'{{node_sp_beg}}|{{node_term_beg}}'                      	#
+  # node_sp_end:          	'{{ws_end}}' #|{{escline_end}} ✗ needs previous line     	#
+  # pre_val:              	'^|\=|\)|{{node_sp_end}}'                                	# line begin^ as line-cont surrogate
+  # ws_beg:               	'{{u_sp}}|{{comment_block_beg}}'   #⊎                    	#
+  # ws_end:               	'{{u_sp}}|{{comment_block_end}}'   #⊎                    	#
+  # node_terminator:      	'{{comment_line}}|{{newline}}|;|{{eof}}'                 	#
+  # node_term_beg:        	'{{c_line_beg}}|;|{{eof}}|{{nl_s}}'                      	#
+  # node_term_beg_no_nl:  	'{{c_line_beg}}|;|{{eof}}'                               	#
+  #                       	                                                         	#
+  # # bareID:             	'(?!{{keyword}}[^{{charID}}]){{bareID_or_KW}}'           	#
+  bareID_or_KW:           	'{{bareID_ex09dsign}}|{{bareID_ex09}}'                   	#
+  bareID_ex09dsign:       	'{{charID_ex09dsign}}{{charID}}*'                        	# pre-sign: exclude digit/dot/sign to avoid clashes
+  bareID_ex09d:           	'[+-](?:{{charID_ex09d}}{{charID}}*)?'                   	# pre-sign: exclude digit/dot
+  bareID_ex09:            	'[+-]?\.(?:{{charID_ex09}}{{charID}}*)?'                 	# pos-sign: exclude digit only
+  charID:                 	'[[{{uchar}}]&&[^{{charWS}}]&&[^{{charID_not}}]]'        	# char🆔 ≝ uchar − u␠ − ␤ −c har🆔¬ − char🛑
+  charID_or_KW:           	'[{{charID}}\#]'                                    #⊎   	#
+  charID_not:             	'[\/\\(){};\[\]=#"]'                                #⊎   	# char🆔¬ ≝ #"(;){"}[#]/=\"#
+  charID_not1st:          	'([0-9])|([+-]|[+-]?\.)([0-9])'                 #.       	#
+  kw1_not:                	'(true|false|null|inf|-inf|nan)'         #.              	# keyword🆔🛑 ≝ true | false | null | inf | -inf | nan
+  # kw1_not_glast5:       	'(tru(e)|fals(e)|nul(l)|-?in(f)|na(n))'     #.           	#
+  # charWS:               	'[{{nl_s}}{{u_sp}}]'                                #∪   	#\r\n sequence not accounted for
+  # charID_rec:           	'{{charID}}(?!{{linesp_re}})'                            	# set-unsafe; includes recursion: linespace → ws → comment_block → commented_block🗘
+  # charID_ex09:          	'[[{{charID}}]&&[^0-9]]'                                 	#char🆔 − 〔0–9〕
+  charID_ex09d:           	'[[{{charID_ex09}}]&&[^\.]]'                             	#char🆔 − 〔0–9〕     − .
+  charID_ex09dsign:       	'[[{{charID_ex09}}]&&[^\.]&&[^+-]]'                      	#char🆔 − 〔0–9〕 − ± − .
+  # unicode_char:         	'[\x{0021}-\x{10FFFF}]'                             #⊎   	# invalid: ≤0x20 or >0x10FFF)
+  uchar:                  	'[\x{0000}-\x{D7FF}\x{E000}-\x{10FFFF}]' #⊎              	#
+  # keyword:              	'{{boolean}}|{{nil}}'                                    	#
+  # prop:                 	'{{ID}}={{value}}'                                       	#
+  # prop_eq:              	'({{u_sp}}?)({{u_sp}}*)(=)({{u_sp}}?)({{u_sp}}*)'        	#
+  # value:                	'{{type}}?({{string}}|{{number}}|{{keyword}})'           	#
+  type:                   	'\({{n_sp}}*{{ID}}{{n_sp}}*\)'                           	#type ≝ "(" n␠* string n␠* ")"
+  #                       	                                                         	#
+  char_illegal:           	'[{{bom}}{{c0a}}{{c0b}}{{cdel}}{{usv_not}}{{cdir}}]' #⊎  	# ST doesn't allow tracking BOM@file begin, so no need to add a BOF condition
+  c0a:                    	  '[\x{0000}-\x{0008}]'                            #⊎    	#
+  # c0valid:              	  '[\x{0009}-\x{000D}]'                            #⊎    	#9␉\t A␊\n B␋\v C␌\f D␍\r
+  c0b:                    	  '[\x{000E}-\x{001F}]'                            #⊎    	#
+  cdel:                   	  '[\x{007F}]'                                     #⊎    	#
+  usv_not:                	  '[{{surrog_high}}{{surrog_low}}]'                #⊎    	# not Unicode scalar value
+  usv_not_hex:            	  '0?0?[dD][8-9a-fA-F]{{d_hex}}{2}'                #.    	#
+  surrog_high:            	    '[\x{D800}-\x{DBFF}]'                          #⊎    	#
+  surrog_low:             	    '[\x{DC00}-\x{DFFF}]'                          #⊎    	#
+  cdir:                   	  '[\x{200E}-\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}]'	#⊎
+  # usv_fmt_not_hex:      	  '0{1,5}{{d_hex}}{1,5}'                           #⊎    	# can be > max, so put lower in priority vs codepoint_not_hex
+  codepoint_not_hex:      	  '{{d_hex}}{7,}|{{cp_max1_hex}}|{{cp_max2_hex}}'        	#1234567>10FFFF
+  cp_max1_hex:            	    '[2-9a-fA-F]{{d_hex}}{5}'                      #⊎    	#20FFFF>10FFFF
+  cp_max2_hex:            	    '1[1-9a-fA-F]{{d_hex}}{4}'                     #⊎    	#11FFFF>10FFFF
+  escaped_string:         	'"{{str_body_line}}"|"""{{str_mline}}"""'                	#
+  str_body_line:          	'{{char_str1}}*'                                         	#string_body_line ≝ ⦅char_str - ␤⦆*
+  str_mline:              	'{{newline}}{{str_bodymline}}{{newline}}({{esc_uws}})*'  	#
+  str_bodymline:          	'"?"?{{char_str}}*'                                      	#
+  char_str:               	'{{escaped}}|[^"]'                                       	#char_str ≝ char⎋ | uni⎋ | w␠⎋ | 〔¬⧵“〕 - char🛑
+  char_str1:              	'{{escaped}}|[^"\n]'                                     	#char_str - ␤
+  escaped:                	'{{esc_char}}|{{esc_uni}}|{{esc_ws}}'                    	#
+  esc_char_s:             	'["\\bfnrts]'                                     #⊎     	#v2: +s −/
+  esc_char:               	'\\{{esc_char_s}}'                                       	#char⎋ ≝ ⧵ 〔“⧵bfnrts〕
+  esc_uni:                	'\\u{{{d_hex}}{1,6}}'                                    	# uni⎋ ≝ ⧵ "u{"; uchar₁₆ "}"
+  esc_ws:                 	'\\({{u_sp}}|{{newline}})+'                              	# w␠⎋ ≝ ⧵ ⦅u␠|␤⦆+
+  esc_uws:                	'{{u_sp}}|{{esc_ws}}'                                    	#
+  esc_usv_not:            	'u{{{usv_not_hex}}}'                                     	#
+  # d_hex:                	'[0-9a-fA-F]'                                            	#
+  # d_hex_:               	'[0-9a-fA-F_]'                                           	#
+  #                       	                                                         	#
+  boolean:                	'(?:\#true|\#false)'                                     	# data type 1/4
+  nil:                    	'(?:\#null)'                                             	# data type 2/4
+  # string:               	'{{raw_string}}|{{escaped_string}}'                      	# data type 3/4
+  number:                 	'{{floatkw}}{{decimal}}|{{hex}}|{{octal}}|{{binary}}' #. 	# data type 4/4
+  #    ↓string            	                                                         	#
+  raw_string:             	 '(#+)?(\")([\S\s]*?)(\")(\2)'                           	#
+  raw_string_re:          	 '{{raw_string_hash_re}}'                                	#🗘
+  # raw_string_hash_re:   	'#{{raw_string_hash_re}}#|{{raw_string_quotes}}'         	#🗘
+  # raw_string_quotes:    	'".*"'                                                   	#
+  string_beg:             	'"|#*"'                                                  	# or (?!r)"|#*"
+  r1string_beg:           	'r?"|r?#*"'                                              	#
+  # string_end:           	'"#*'                                                    	# or (?!r)"|#*"
+  #    ↓number            	                                                         	#
+  floatkw:                	'(\#inf|\#-inf|\#nan)'                     #.            	# ? not uncapturing like nil?
+  # decimal:              	      '([+-])?({{integer}})(\.{{integer}})?{{exponent}}?'	#
+  # exponent:             	'([eE])([+-])?({{integer}})'                             	#
+  # integer:              	'[0-9][0-9_]*'                                           	# leading 0s are allowed
+  # #sign:                	'[+-]'                                               #⊎  	# using [+-] is cleaner than {{sign}}
+  #                       	                                                         	#
+  # hex:                  	'([+-])?(0x)({{d_hex}}{{d_hex_}}*)'                      	#
+  # octal:                	'([+-])?(0o)([0-7][0-7_]*)'                              	#
+  # binary:               	'([+-])?(0b)([0-1][0-7_]*)'                              	#
+  #                       	                                                         	#
+  # escline:              	'\\{{ws}}*({{comment_line}}|{{nl_s}})'                   	#
+  # escline_beg:          	'\\'                                              #⊎     	#
+  # linesp_re:            	'{{nl_s}}|{{ws}}|{{comment_line}}'                       	# set-unsafe; includes recursion: ws → comment_block → commented_block🗘
+  # char_linesp:          	'[{{nl_s}}{{u_sp}}{{c_beg}}]'                       #∪   	# ex / but not precisely //
+  # newline:              	'(?>\r\n?|[\x{A}\x{B}\x{C}\x{85}\x{2028}\x{2029}])' #.   	# \R
+  # nl_s:                 	'[\r\n\x{B}\x{C}\x{85}\x{2028}\x{2029}]'            #∪   	# not precisely ␤␊
+  nl_not_s:               	'[^{{nl_s}}]'                                      #⊎    	#
+  ws:                     	 '{{u_sp}}|{{comment_block}}'                            	#
+  b_sp:                   	'{{u_sp}}'                                          #⊎   	#left to override v1 syntax
+  uspnl:                  	'{{u_sp}}|{{newline}}'                              #.   	#
+  # uspnl_s:              	'[{{u_sp}}{{nl_s}}]'                               #∪    	#
+  # bom:                  	'[\x{FEFF}]'                                             	#
+  # unicode_space:        	'[[:blank:]]'                                       #⊎   	#
+  # comment_line:         	'({{c_line_beg}})([^{{nl_s}}]*)({{c_line_end}})'         	#
+  # comment_line_no_nl:   	'({{c_line_beg}})([^{{nl_s}}]*)'                         	#
+  # comment_block:        	'{{comment_block_beg}}{{commented_block}}'               	# set-unsafe; recursion: commented_block🗘
+  # c_beg:                	'/'                                                      	#
+  # c_slashdash:          	'/-'                                                     	#
+  # c_line_beg:           	'//'                                                     	#
+  # c_line_end:           	'{{nl_s}}|{{eof}}'                                       	#
+  cc_beg:                 	'{{c_line_beg}}|{{comment_block_beg}}'                   	#
+  # eof:                  	'$(?!{{nl_s}})'                                          	#
+  eof:                    	'(?=[\S{{u_sp}}]$(?!{{nl_s}}))'                          	#
+  eof_x:                  	'(?=[\S\s]{{eof}})' # when ↑ bugs                        	#
+  # comment_block_beg:    	'/\*'                                                    	#
+  # comment_block_doc_beg:	'{{comment_block_beg}}(!|\*(?!/))'                       	#
+  # commented_block:      	'\*/|({{comment_block}}|\*|/|[^*/]+){{commented_block}}' # !!! cant recurse vars, do via syntax
+  # comment_block_end:    	'\*/'                   	#
+  # comment_block_doc_end:	'{{comment_block_end}}' 	#
+  u_sp_not:               	'[^{{u_sp}}]'         #⊎	#
+  # u_sp: '[\x{9}\x{20}\x{A0}\x{1680}\x{2000}\x{2001}\x{2002}\x{2003}\x{2004}\x{2005}\x{2006}\x{2007}\x{2008}\x{2009}\x{200A}\x{202F}\x{205F}\x{3000}]' #⊎ #
+  ID: '{{string}}|((?!({{keyword}})[^{{charID}}])({{bareID_ex09}}|{{bareID_ex09d}}|{{bareID_ex09dsign}}))' # bugs as 'recursive' if replace inlined vars with the same combo var
+  bareID:        '((?!({{keyword}})[^{{charID}}])({{bareID_ex09}}|{{bareID_ex09d}}|{{bareID_ex09dsign}}))' # bugs as 'recursive' if replace inlined vars with the same combo var
+  # ↑ excludes keywords, but string would be a pain to style
+
+contexts:
+  prototype:
+    - include: ch🛑s
+  #   # - include: wss
+  #   # - include: comment_block∨doc
+  #   # - meta_include_prototype: false
+  #   # todo: bugs e.g. (a)/**/1 is a comment even if you exclude everywhere
+
+  main:
+    - meta_include_prototype: false
+    - match : ''
+      push  : #✗⁰
+      #- meta_scope        : dbg✗⁰
+      - include: nodes
+
+  nodes: #✗⁰ ≝ ⦅l_␠*⠀node⦆* l_␠*
+    - include: linesp
+    - include: node
+    - include: any🛑 # todo disable? strict mode
+    # - include: any-pop
+
+#——— 0 Groups
+  node-elements:          #✗²
+    - match               : (?={{node_sp_beg}}) # mandatory whitespace
+      push                : #✗³ push to require ws before each element
+      #- meta_scope        : dbg✗³node␠arg∨prop∨child
+      - include           : node␠s
+      - include           : node_els
+      - include           : child_block4
+    - match               : '{'
+      scope               : invalid.illegal.position.kdl punctuation.section.mapping.begin.kdl
+      push                : child_block3-body
+    - include             : nodech_terminator3⸮
+    - include             : S🛑¹pre_s∨c∨t
+    # - include: comments
+    # - include: char🆔¬
+
+  node_els:               #✗³
+    - include             : node_ch∨argprop⁄-
+    - match               : '({{c_slashdash}})'
+      scope               : comment.line.slash-dash.kdl punctuation.definition.comment.begin.kdl
+      pop                 : 1 #✗²
+      set                 :   #✗² due to set=pop+push
+      #- meta_scope        : dbg✗²node␠⁄−arg∨prop∨child
+      - include           : linesp
+      - include           : node_terminator🛑3
+      - include           : arg∨prop⁄-un⁄-
+      # - include           : child_block⁄-
+      - include           : pop # todo not style /- empty via branches above ↑
+      # - include           : S🛑¹pre_s∨c∨t
+    - include             : arg∨prop
+    - include             : child_block
+    - include             : ｝
+    - include             : node_terminator4  # ... but then an extra pop is needed
+
+  str_id: # str🆔 ≝ clean🆔 | signed🆔 | dotted🆔
+    # ✗⁴ from arg-⸙2, property-value
+    - include             : keyword1str🛑pre␠␤
+    - match               : '([+-]|[+-]?\.)([0-9])'
+      captures            :
+        1:                  invalid.illegal.position.kdl
+        2:                  invalid.illegal.muted.position.kdl
+    - match               : '{{bareID}}'
+      push                : #✗⁵
+      - meta_scope        : meta.string.kdl string.unquoted.kdl
+      - match             : '{{charID}}'
+        scope             : string.unquoted.kdl
+      - include           : ｛3
+      - include           : ｝3
+      - include           : pop_pre_node_end
+      - include           : pop3_pre_esc
+      - include           : pop3_precc
+      - include           : char🆔¬
+      - include           : pop3
+  str_ids: # allow multiple values to eg, check for '=' after unquoted 'key'
+    # ✗⁴ from arg-⸙2, property-value
+    - include             : keyword1str🛑pre␠␤
+    - match               : '([+-]|[+-]?\.)([0-9])'
+      captures            :
+        1:                  invalid.illegal.position.kdl
+        2:                  invalid.illegal.muted.position.kdl
+    - match               : '{{bareID}}'
+      push                : #✗⁵
+      - meta_scope        : meta.string.kdl string.unquoted.kdl
+      - match             : '{{charID}}'
+        scope             : string.unquoted.kdl
+      - include           : ｛3
+      - include           : ｝3
+      - include           : pop_pre_node_end
+      - include           : pop_pre-node␠
+      - include           : char🆔¬
+      - include           : pop
+
+  string:
+    - include: string-quoted-double3
+    - include: string-quoted-double
+    - include: string-quoted-double3-raw
+    - include: string-quoted-double-raw
+  strings:
+    - include: strings-quoted-double3
+    - include: strings-quoted-double
+    - include: strings-quoted-double3-raw
+    - include: strings-quoted-double-raw
+  strings_node-id:
+    - include: strings-quoted-double3_node-id
+    - include: strings-quoted-double_node-id
+    - include: strings-quoted-double3-raw_node-id
+    - include: strings-quoted-double-raw_node-id
+  # number:
+  #   - include: bin¦oct¦hex-partial
+  #   - include: hexadecimal
+  #   - include: octal
+  #   - include: binary
+  #   - include: int∨dec∨float
+  # comments:
+  #   - include: comment_block∨doc
+  #   # - include: comment_slashdash
+  #   - include: comment_line
+  # comment_block∨doc:
+  #   - include: comment_block_doc
+  #   - include: comment_block
+  keyword:
+    - include: keyword-partial
+    - include: boolean
+    - include: nil
+    - include: floatkw
+  keyword🛑:
+    - include: boolean🛑
+    - include: null🛑
+    - include: floatkw🛑
+  keyword-partial: # avoid red flashes with unfinished typing
+    - include: bool-partial
+    - include: null-partial
+    - include: floatkw-partial
+  keyword-partial-ext🛑: # avoid red flashes with extra #keyword_typing
+    - include: bool-partial-ext🛑
+    - include: null-partial-ext🛑
+    - include: floatkw-partial-ext🛑
+  keyword1str🛑pre␠␤:
+    - include: keyword1str🛑pre␠；
+    - include: keyword1str🛑pre␤
+  keyword1node🛑pre␠␤:
+    - include: keyword1node🛑pre␠；
+    - include: keyword1node🛑pre␤
+
+
+#——— 1 Node: \- type
+  node:                   #✗⁰ ≝ node_base node_end
+    - include             : node_base
+    # - include             : node_terminator # free-standing term isn't allowed
+
+
+
+
+
+
+
+
+
+  node_base:              #✗⁰
+    - include             : ⁄-node
+    - include             : nodetID
+  nodetID:                #✗⁰
+    # - include             : line_continuation # only needed after /-
+    - match               : '(?=\()'
+      push                :
+      - meta_scope        : meta.node.kdl #✗¹node_base_t
+      - include           : type-node
+    - match               : '(?={{r1string_beg}}|{{bareID}})'
+      push                :
+      - meta_scope        : meta.node.kdl #✗¹node_base_s_b
+      - include           : nodeID
+
+  type-node:              #✗¹
+    - match               : \(
+      scope               : punctuation.separator.annotation.begin.kdl
+      push                : #✗²
+      - meta_scope        : meta.annotation.kdl #✗²m
+      - meta_content_scope: entity.name.type.kdl #✗²c
+      - match             : '(?<=\()({{u_sp}}*\))|(\))'
+        captures          :
+          1:                invalid.illegal.muted.kdl #punctuation.separator.annotation.end.kdl invalid.illegal.position.kdl
+          2:                punctuation.separator.annotation.end.kdl #✗typenode_close
+        pop               : 2 # remove 1st annotation, 2 fixes a bug?
+        set               : #✗¹ # push bugs even with pop, still get meta_content
+        - include         : node␠
+        - include         : nodeID
+        - include         : char🆔¬
+        - include         : any🛑s
+      - include           : node␠
+      - include           : type-content-node
+      - include           : type🛑
+
+  type-content-node:      #✗²
+    - include             : keyword🛑
+    - match               : '(?={{r1string_beg}})' # string: must push to ban "a""b"
+      push                : #✗³
+      # - meta_scope        : dbgtype-content-node✗³
+      - include           : strings-quoted-double-raw-consecutive🛑 # ..gs allows popping later on )
+      - include           : strings-quoted-double-consecutive🛑
+      - include           : strings
+      - include           : pop_pre） # remove ↑
+      - include           : any🛑s
+    - include             : ID_bare_s🛑
+
+
+
+#——— 2 Node Element: 1 Name
+  nodeID:                 #✗¹
+    # - include             : keywords🛑
+    - include             : keyword1node🛑pre␠␤
+    - match               : '(?={{r1string_beg}})'
+      push                : #✗²
+      # - meta_scope        : entity.name.tag.node.kdl #✗²
+      - include           : string-quoted-double-raw-consecutive🛑3
+      - include           : string-quoted-double-consecutive🛑3
+      - include           : strings_node-id # use custom strings scopes or meta_scope gets applied to "args"
+      - include           : node-elements
+      # - include           : node_terminator3
+    - include             : bare-after-string🛑
+    - match               : '([+-]|[+-]?\.)([0-9])'
+      scope               : entity.name.tag.node.kdl
+      captures            :
+        1:                  invalid.illegal.position.kdl
+        2:                  invalid.illegal.muted.position.kdl
+    - match               : '{{bareID}}'
+      scope               : entity.name.tag.node.kdl
+      push                : #✗²
+      #- meta_scope        : dbg✗²_nodeID→node_elements
+      - include           : node-elements
+      # - include           : node_terminator3
+      - include           : S🛑s
+
+#——— 2 Node Element: 2 Argument or 3 Property
+  # arg∨prop:               #✗³
+  #   # - include           : node␠
+  #   - include             : arg_typed
+  #   - include             : arg_untyped∨prop
+
+  arg_untyped∨prop:       #✗³
+    - match               : '(?={{r1string_beg}})'
+      branch_point        : ⸙1“arg∨prop”
+      branch              : #✗⁴⸙
+        - “arg”-⸙1
+        - “⚿”₌v-⸙1
+    - match               : '(?={{charID_or_KW}})'
+      branch_point        : ⸙2arg∨prop
+      branch              : #✗⁴⸙
+        - arg-⸙2
+        - ⚿₌v-⸙2
+
+#——— 2 Node Element: 2 Argument
+  “arg”-⸙1:               #✗⁴
+    - meta_scope          : meta.argument.value.kdl meta.mapping.value.kdl #✗⁴“arg”⸙1
+    - include             : “arg”
+    - include             : “arg”🛑
+    - include             : pop⸙
+  arg-⸙2:                 #✗⁴
+    - meta_scope          : meta.argument.value.kdl meta.mapping.value.kdl #✗⁴arg⸙2
+    - match               : (?={{node_sp_beg}}) # limit node␠ to pre= only otherwise 'a p=1' fails due to '(\S*)(?==)'
+      pop                 : 1
+      push                : #✗⁴
+      - include           : node␠
+      - match             : '{{prop_eq}}'
+        fail              : ⸙2arg∨prop
+      - include           : pop #✗³
+    - match               : '(\S*)(?==)'
+      fail                : ⸙2arg∨prop
+    - include             : value
+    - include             : str_ids
+    - include             : value🛑
+    - include             : pop_pre␤
+    - include             : pop⸙
+
+  # arg_typed:              #✗³
+  #   - match               : (?=\()
+  #     set                 :
+  #     - meta_scope        : meta.argument.value.kdl meta.mapping.value.kdl #✗³typed
+  #     - include           : type-value
+  “arg”:                  #✗⁴
+    # - include             : string  # can't use as is since branch check comes after we're inside a string!
+    - match               : (?={{node_sp_beg}}) # limit node␠ to pre= only otherwise 'a p=1' fails due to '(\S*)(?==)'
+      pop                 : 1
+      push                : #✗⁴
+      - include           : node␠
+      - match             : '{{prop_eq}}'
+        fail              : ⸙1“arg∨prop”
+      - include           : pop #✗³
+    - match               : '(?={{r1string_beg}})'
+      push                : #✗⁵
+      # - meta_scope        : dbg“arg”✗⁵
+      - include           : string-quoted-double-raw-consecutive🛑3
+      - include           : string-quoted-double-consecutive🛑3
+      - include           : strings
+      - match             : '{{prop_eq}}'
+        fail              : ⸙1“arg∨prop”
+      - include           : pop # 1 to allow searching and failing on =
+      # - include           : pop3  # ¹arg_untyped∨prop branch ²↑ 3 exit
+
+  ## arg:                    #✗⁴
+  ##   - include             : type-value
+  ##   - include             : value
+  ##   - include             : value🛑
+
+  # value:                  #✗⁴
+  #   - include             : keyword
+  #   - include             : string
+  #   - include             : number
+  val🛑: # todo: combine?
+    - include             : pop2_pre␠
+    - include             : pop2_pre␤
+    - include             : pop2_pre-term
+    # - include             : pop2_pre-str
+    # - include             : char🆔¬
+    # - include             : pop_pre🆔¬  # let previous layers deal with invalid chars
+    - include             : ch🛑pre␠   # todo: or just scrap illegals? let unstyled content be the indicator
+    - include             : sd🛑pre␠
+    - include             : sd🛑pre␤
+  value🛑:
+    - include             : ＃maybe-keyword🛑
+    - include             : val🛑
+    - include             : ch🛑pre_term
+    - include             : ch🛑pre-str
+  # “arg”🛑:
+  #   - include             : val🛑
+  #   - include             : S🛑pre␤
+
+#——— 2 Node Element: 3 Property
+  ⚿₌v-⸙2:                 #✗⁴
+    - meta_scope          : meta.property.kdl #✗⁴⚿₌v⸙
+    - include             : ＃non-keyword🛑
+    - include             : keyword🛑
+    - include             : ID_bare¬1st🛑
+    - include             : ⚿
+  ⚿:                      #✗⁴
+    - match               : '({{charID}}+)'
+      scope               : entity.other.attribute-name.kdl
+      pop                 : 1 # ↑⸙
+      push                :
+        - meta_scope      : meta.property.name.kdl meta.mapping.key.kdl #✗⁴
+        - include         : node␠
+        - include         : property₌
+        - include         : pop_pre-term # unblock errors from spoiling the whole line
+
+  # “⚿”₌v-⸙1:
+  #   - meta_scope          : meta.property.name.kdl meta.mapping.key.kdl entity.other.attribute-name.kdl
+  #   - include             : “⚿”
+  “⚿”:
+    - include             : strings # allows ↓ check to go through while 2nd consecutive string not possible since it'll be treated as a second argument and there is a condition that errors that
+    - include             : node␠
+    - include             : property₌
+  property₌:              #✗⁴
+    - match               : '(=)'
+      scope               : meta.property.separator.kdl meta.mapping.separator.kdl punctuation.separator.key-value.kdl
+      pop                 : 1
+      push                : property-value # todo: set bugs to clear
+  property-value:         #✗⁴
+    # - meta_scope          : # gets misapplied to =
+    # - meta_content_scope  : # gets removed from some values that pop immediately like boolean #meta.property.value.kdl meta.mapping.value.kdl ✗⁴
+    - include             : comments
+    - include             : node␠
+    - match               : (?=\()
+      pop                 : 2 # ↑⸙ to reach ³ like arg_typed
+      push                : #✗³
+      - meta_scope        : meta.property.value.kdl meta.mapping.value.kdl #✗³prop_val_typ
+      - include           : type-value
+    - match               : (?!\() # required to apply proper context to value
+      set                 : #✗⁴
+      - meta_scope        : meta.property.value.kdl meta.mapping.value.kdl #✗⁴prop_val_untyp
+      - include           : ⁄-🛑
+      - include           : value
+      - include           : str_id
+      - include           : value🛑
+    - include             : property🛑
+  # property🛑:
+  #     - include           : pop_pre␠
+  #     - include           : pop_pre␤
+  #     - include           : pop_pre🆔¬     # let previous layers deal with invalid chars
+  #     - include           : ch🛑pre␠ # todo: or just scrap illegals? let unstyled content be the indicator
+  #     - include           : S🛑pre␤
+  #     - include           : S🛑s
+
+#——— Type-values
+  type-value:             #✗³
+    - match               : \(
+      scope               : punctuation.separator.annotation.begin.kdl
+      push                : #✗⁴
+      - meta_scope        : meta.annotation.kdl #✗⁴type_value
+      - meta_content_scope: entity.name.type.kdl
+      - match             : '(?<=\()({{u_sp}}*\))|(\))'
+        captures          :
+          1:                invalid.illegal.muted.kdl #punctuation.separator.annotation.end.kdl invalid.illegal.position.kdl
+          2:                punctuation.separator.annotation.end.kdl
+        pop               : 1 # remove ↑annotation
+        set               : # push bugs even with pop, still get meta_content
+        - include         : node␠
+        - include         : value
+        - include         : str_id
+        - include         : value🛑
+        - include         : pop2_pre-term # todo: sort which are best
+        - include         : any🛑s
+      - include           : node␠
+      - include           : type-name
+      - include           : type🛑
+
+  type-name:              #✗⁴ see type-content-node
+    - include             : keyword🛑
+    - match               : '(?={{r1string_beg}})'
+      push                : #✗⁵
+      # - meta_scope        : dbgtype-name✗⁵
+      - include           : strings-quoted-double-raw-consecutive🛑
+      - include           : strings-quoted-double-consecutive🛑
+      - include           : strings
+      - include           : pop_pre） # remove ↑
+      - include           : any🛑s
+    - include             : ID_bare_s🛑
+  # # type-content: # fails due to the need to mandate 1value
+  #   # - include             : keyword🛑
+  #   # - include             : string
+  #   # - include             : IDs_bare
+  # type🛑:
+  #   - include             : char🆔¬
+  #   - include             : s🛑s
+  #   - include             : S🛑s
+
+
+
+
+  # IDs_bare:
+  #   - match               : '({{bareID}})'
+  # ID_bare:
+  #   - match               : '({{bareID}})'
+  #     pop                 : 1
+
+#——— Values - Keywords
+  boolean:  #\b bugs with # since # isn't word border, so move # before \b
+    - match               : \#\b(true|false)\b
+      scope               : keyword.other.kdl constant.language.boolean.kdl
+      pop                 : 2
+  nil:
+    - match               : '\#\b(null)\b'
+      scope               : keyword.other.kdl constant.language.null.kdl
+      pop                 : 2
+  floatkw:  #\b bugs with -
+    - match               : \#-?\b(inf)\b
+      scope               : keyword.other.kdl constant.language.float.kdl
+      pop                 : 2
+    - match               : \#\b(nan)\b
+      scope               : keyword.other.kdl constant.language.float.kdl
+      pop                 : 2
+
+  # before     sp begin
+  # after  = ) sp end (though can't detect line continuation, add that condition within line cont rule)
+  bool-partial: #\b bugs with n t|x
+    - match               : '(?<={{pre_val}})\#(tr?u?|fa?l?s?)(?={{any_sp_t_beg}})'
+      # scope               : dbg✗bool-partial punctuation.separator
+      pop                 : 2
+  null-partial:
+    - match               : '(?<={{pre_val}})\#(nu?l?)(?={{any_sp_t_beg}})'
+      pop                 : 2
+  floatkw-partial:
+    - match               : '(?<={{pre_val}})\#(-?in?)(?={{any_sp_t_beg}})'
+      pop                 : 2
+    - match               : '(?<={{pre_val}})\#(n?a)(?={{any_sp_t_beg}})'
+      pop                 : 2
+
+  bool-partial-ext🛑: #\b bugs with n t|x   Invalid chars after valid keyword (even if partial)
+    - match               : '(?<={{pre_val}})(\#)(tr?u?e?|fa?l?s?e?)({{charID_or_KW}}+)'
+      # scope               : dbg✗bool_partial_ext🛑 punctuation.separator
+      captures            :
+        3:                  invalid.illegal.position.kdl
+      pop                 : 2
+  null-partial-ext🛑:  # remove 'n' match otherwise 'nan' will never get a chance
+    - match               : '(?<={{pre_val}})(\#)(nul?l?)({{charID_or_KW}}+)'
+      captures            :
+        3:                  invalid.illegal.position.kdl
+      pop                 : 2
+  floatkw-partial-ext🛑:
+    - match               : '(?<={{pre_val}})(\#)(-?in?f?)({{charID_or_KW}}+)'
+      captures            :
+        3:                  invalid.illegal.position.kdl
+      pop                 : 2
+    - match               : '(?<={{pre_val}})(\#)(na?n?)({{charID_or_KW}}+)'
+      captures            :
+        3:                  invalid.illegal.position.kdl
+      pop                 : 2
+
+  ＃non-keyword🛑: # in prop=val # isn't allowed, so no partial #tru included
+    - match               : '(?=\#)'
+      push                : #✗⁵
+      # - meta_scope        : ＃non-keyword🛑✗⁵
+      - match             : '(\#)?({{charID_or_KW}})({{charID_or_KW}}*)'
+        scope             : keyword.other.kdl
+        captures          :
+          1:               invalid.illegal.position.kdl
+          2:               invalid.illegal.position.kdl
+          3:               invalid.illegal.muted.position.kdl
+        pop                 : 2
+  ＃maybe-keyword🛑:
+    - match               : '(?=\#)'
+      push                : #✗⁵
+      # - meta_scope        : ＃maybe-keyword🛑✗⁵
+      - include           : keyword-partial-ext🛑  # in arguments #t could be #true, so could #trued be a typo, thus don't error on partials, only on extends
+      - match             : '(\#)?({{charID_or_KW}})({{charID_or_KW}}*)'
+        scope             : keyword.other.kdl
+        captures          :
+          2:               invalid.illegal.position.kdl
+          3:               invalid.illegal.muted.position.kdl
+        pop                 : 2
+
+  boolean🛑:
+    - match               : '(\#)?((t)(rue)|(f)(alse))(?=[^{{charID}}])'
+      scope               : keyword.other.kdl constant.language.boolean.kdl
+      captures            :
+        1:                 invalid.illegal.position.kdl
+        3:                 invalid.illegal.position.kdl
+        4:                 invalid.illegal.muted.position.kdl
+        5:                 invalid.illegal.position.kdl
+        6:                 invalid.illegal.muted.position.kdl
+  null🛑:
+    - match               : '(\#)?((n)(ull))(?=[^{{charID}}])'
+      scope               : keyword.other.kdl constant.language.null.kdl
+      captures            :
+        1:                 invalid.illegal.position.kdl
+        3:                 invalid.illegal.position.kdl
+        4:                 invalid.illegal.muted.position.kdl
+  floatkw🛑:
+    - match               : '(\#)?((-)?(i)(nf))(?=[^{{charID}}])'
+      scope               : keyword.other.kdl constant.language.float.kdl
+      captures            :
+        1:                 invalid.illegal.position.kdl
+        3:                 invalid.illegal.position.kdl
+        4:                 invalid.illegal.position.kdl
+        5:                 invalid.illegal.muted.position.kdl
+    - match               : '(\#)?((n)(an))(?=[^{{charID}}])'
+      scope               : keyword.other.kdl constant.language.float.kdl
+      captures            :
+        1:                 invalid.illegal.position.kdl
+        3:                 invalid.illegal.position.kdl
+        4:                 invalid.illegal.muted.position.kdl
+
+  keyword1str🛑pre␠；:    # to avoid red flashes, mark last char as illegal before ␠ or ; (rest muted)
+    - match               : '((tru)(e)|(fals)(e)|(nul)(l)|(-?in)(f)|(na)(n))(?={{u_sp}}|;)'
+      captures            :
+        # 1:                  invalid.illegal.muted.position.kdl
+        2:                  invalid.illegal.muted.position.kdl
+        3:                  invalid.illegal.position.kdl
+        4:                  invalid.illegal.muted.position.kdl
+        5:                  invalid.illegal.position.kdl
+        6:                  invalid.illegal.muted.position.kdl
+        7:                  invalid.illegal.position.kdl
+        8:                  invalid.illegal.muted.position.kdl
+        9:                  invalid.illegal.position.kdl
+        10:                 invalid.illegal.muted.position.kdl
+        11:                 invalid.illegal.position.kdl
+  keyword1node🛑pre␠；:   # to avoid red flashes, mark last char as muted before ␠ or ; (rest node)
+    - match               : '((tru)(e)|(fals)(e)|(nul)(l)|(-?in)(f)|(na)(n))(?={{u_sp}}|;|})'
+      captures            :
+        # 1:                  entity.name.tag.node.kdl
+        2:                  entity.name.tag.node.kdl
+        3:                  invalid.illegal.muted.position.kdl
+        4:                  entity.name.tag.node.kdl
+        5:                  invalid.illegal.muted.position.kdl
+        6:                  entity.name.tag.node.kdl
+        7:                  invalid.illegal.muted.position.kdl
+        8:                  entity.name.tag.node.kdl
+        9:                  invalid.illegal.muted.position.kdl
+        10:                 entity.name.tag.node.kdl
+        11:                 invalid.illegal.muted.position.kdl
+      push                : #✗²
+      - include           : node-elements
+      - include           : S🛑s
+  keyword1str🛑pre␤:      # to avoid red flashes, mark last char as illegal before ␤ or ; (rest string)
+    - match               : '((tru)(e)|(fals)(e)|(nul)(l)|(-?in)(f)|(na)(n))(?={{newline}})'
+      captures            :
+        2:                  meta.string.kdl string.unquoted.kdl
+        3:                  invalid.illegal.muted.position.kdl
+        4:                  meta.string.kdl string.unquoted.kdl
+        5:                  invalid.illegal.muted.position.kdl
+        6:                  meta.string.kdl string.unquoted.kdl
+        7:                  invalid.illegal.muted.position.kdl
+        8:                  meta.string.kdl string.unquoted.kdl
+        9:                  invalid.illegal.muted.position.kdl
+        10:                 meta.string.kdl string.unquoted.kdl
+        11:                 invalid.illegal.muted.position.kdl
+  keyword1node🛑pre␤:     # to avoid red flashes, mark last char as illegal before ␤ or ; (rest node)
+    - match               : '((tru)(e)|(fals)(e)|(nul)(l)|(-?in)(f)|(na)(n))(?={{newline}})'
+      captures            :
+        2:                  entity.name.tag.node.kdl
+        3:                  invalid.illegal.muted.position.kdl
+        4:                  entity.name.tag.node.kdl
+        5:                  invalid.illegal.muted.position.kdl
+        6:                  entity.name.tag.node.kdl
+        7:                  invalid.illegal.muted.position.kdl
+        8:                  entity.name.tag.node.kdl
+        9:                  invalid.illegal.muted.position.kdl
+        10:                 entity.name.tag.node.kdl
+        11:                 invalid.illegal.muted.position.kdl
+      push                : #✗²
+      - include           : node-elements
+      - include           : S🛑s
+
+
+
+#——— Values - Strings
+  string-quoted-double:
+    - match               : '(r?)(")'
+      captures            :
+        1:                  invalid.illegal.position.kdl
+        2:                  punctuation.definition.string.begin.kdl
+      push                :
+      - meta_scope        : meta.string.kdl string.quoted.double.kdl
+      - match             : '"'
+        scope             : punctuation.definition.string.end.kdl
+        pop               : 3
+      - include           : char-escaped
+      - include           : ␤🛑¹s
+  string-quoted-double3:
+    - match               : '(r?)(""")({{nl_not_s}}?)({{nl_not_s}}*)'
+      captures            :
+        1:                 invalid.illegal.position.kdl
+        2:                 punctuation.definition.string.begin.kdl
+        3:                 invalid.illegal.position.kdl
+        4:                 invalid.illegal.muted.position.kdl
+      push                :
+      - meta_scope        : meta.string.kdl string.quoted.double.block.kdl
+      - include           : ch⎋“s # before ↓ to handle valid \""" and non w␠⎋
+      - include           : ch⎋¬“s
+      - include           : uni⎋s
+      - include           : de␠e”””⸮ # attaches the last w␠⎋ to the ending """ instead of the body
+      - include           : char-esc-multi2
+      - match             : '({{u_sp}}*)(""")'
+        captures          :
+          1:               whitespace.dedent.kdl
+          2:               punctuation.definition.string.end.kdl
+        pop               : 3
+      - match             : '^(?={{u_sp}}*((\S[\s\S]*?[^\\])|([^\\\s]))""")'
+        push              :
+        - include         : de␠e_s
+        - match           : '(""")'
+          scope           : punctuation.definition.string.end.kdl
+          pop             : 4
+        - include         : S🛑¹”””p4
+      # same without ^start of line since char-esc-multi can eat up all whitespace up to """, so there will be no start of line for this rule
+      # todo: maybe safe to use 1 rule without ^?
+      - match             : '(?={{u_sp}}*((\S[\s\S]*?[^\\])|([^\\\s]))""")'
+        push              :
+        - include         : de␠e_s
+        - match           : '(""")'
+          scope           : punctuation.definition.string.end.kdl
+          pop             : 4
+        - include         : S🛑¹”””p4
+  strings-quoted-double:
+    - match               : '(r?)(")'
+      captures            :
+        1:                  invalid.illegal.position.kdl
+        2:                  punctuation.definition.string.begin.kdl
+      push                :
+      - meta_scope        : meta.string.kdl string.quoted.double.kdl
+      - match             : '"'
+        scope             : punctuation.definition.string.end.kdl
+        pop               : 1
+      - include           : char-escaped
+      - include           : ␤🛑¹s
+  strings-quoted-double3:
+    - match               : '(r?)(""")({{nl_not_s}}?)({{nl_not_s}}*)'
+      captures            :
+        1:                 invalid.illegal.position.kdl
+        2:                 punctuation.definition.string.begin.kdl
+        3:                 invalid.illegal.position.kdl
+        4:                 invalid.illegal.muted.position.kdl
+      push                :
+      - meta_scope        : meta.string.kdl string.quoted.double.block.kdl
+      - include           : ch⎋“s # before ↓ to handle valid \""" and non w␠⎋
+      - include           : ch⎋¬“s
+      - include           : uni⎋s
+      - include           : de␠e”””⸮ # attaches the last w␠⎋ to the ending """ instead of the body
+      - include           : char-esc-multi
+      - match             : '({{u_sp}}*)(""")'
+        captures          :
+          1:               whitespace.dedent.kdl
+          2:               punctuation.definition.string.end.kdl
+        pop               : 1
+      - match             : '^(?={{u_sp}}*((\S[\s\S]*?[^\\])|([^\\\s]))""")'
+        push              :
+        - include         : de␠e_s
+        - match           : '(""")'
+          scope           : punctuation.definition.string.end.kdl
+          pop             : 2
+        - include         : S🛑¹”””p2
+      # same without ^start of line since char-esc-multi can eat up all whitespace up to """, so there will be no start of line for this rule
+      - match             : '(?={{u_sp}}*((\S[\s\S]*?[^\\])|([^\\\s]))""")'
+        push              :
+        - include         : de␠e_s
+        - match           : '(""")'
+          scope           : punctuation.definition.string.end.kdl
+          pop             : 2
+        - include         : S🛑¹”””p2
+  strings-quoted-double_node-id:
+    - match               : '(r?)(")'
+      captures            :
+        1:                  invalid.illegal.position.kdl
+        2:                  punctuation.definition.string.begin.kdl
+      push                :
+      - meta_scope        : entity.name.tag.node.kdl meta.string.kdl string.quoted.double.kdl
+      - match             : '"'
+        scope             : punctuation.definition.string.end.kdl
+        pop               : 1
+      - include           : char-escaped
+      - include           : ␤🛑¹s
+  strings-quoted-double3_node-id:
+    - match               : '(r?)(""")({{nl_not_s}}?)({{nl_not_s}}*)'
+      captures            :
+        1:                 invalid.illegal.position.kdl
+        2:                 punctuation.definition.string.begin.kdl
+        3:                 invalid.illegal.position.kdl
+        4:                 invalid.illegal.muted.position.kdl
+      push                :
+      - meta_scope        : entity.name.tag.node.kdl meta.string.kdl string.quoted.double.block.kdl
+      - include           : char-esc-multi
+      - match             : '^(({{u_sp}}|((\\)({{u_sp}}|{{newline}})+))*)({{u_sp_not}}?)([\s\S]*?)(""")'
+      # - match             : '^((\s|\\\s+)*)([^\"]?)([^\"]*)(""")'
+        captures          : # will only highlight the last \, don't know how to fix
+          1:               whitespace.dedent.kdl
+          3:               constant.character.escape.kdl
+          4:               punctuation.definition.escape.begin.kdl
+          6:               invalid.illegal.position.kdl
+          7:               invalid.illegal.muted.position.kdl
+          8:               punctuation.definition.string.end.kdl
+        pop               : 1
+  ch⎋“s:
+    - match               : '(\\)(")(?!""")'
+      captures            :
+        1:                 constant.character.escape.kdl punctuation.definition.escape.begin.kdl
+        2:                 constant.character.escape.kdl
+  ch⎋¬“s:
+    - match               : '(\\)([[{{esc_char_s}}]&&[^"]])'
+      captures            :
+        1:                 constant.character.escape.kdl punctuation.definition.escape.begin.kdl
+        2:                 constant.character.escape.kdl
+  ch⎋s:
+    - match               : '(\\)({{esc_char_s}})'
+      captures            :
+        1:                 constant.character.escape.kdl punctuation.definition.escape.begin.kdl
+        2:                 constant.character.escape.kdl
+  char-escaped:
+    - match               : '(\\)'
+      scope               : constant.character.escape.kdl punctuation.definition.escape.begin.kdl
+      push                :
+      - match             : '({{esc_char_s}})'
+        captures          :
+          1:               constant.character.escape.kdl
+        pop               : 1
+      - include           : char-esc-uni🛑
+      - include           : char-esc-uni
+      - include           : u␠␤s
+      - include           : any🛑
+  char-escaped1: # pops 1 extra
+    - match               : '(\\)'
+      scope               : constant.character.escape.kdl punctuation.definition.escape.begin.kdl
+      push                :
+      - match             : '({{esc_char_s}})'
+        captures          :
+          1:               constant.character.escape.kdl
+        pop               : 2
+      - include           : char-esc-uni🛑2
+      - include           : char-esc-uni2
+      - include           : u␠␤s2
+      - include           : any🛑
+  char-esc-multi: # same as char-escaped, but error-pops on ending """ as it "eats" the ␤ that this ending requires
+    - match               : '(\\)'
+      scope               : constant.character.escape.kdl punctuation.definition.escape.begin.kdl
+      push                :
+      - match             : '({{esc_char_s}})'
+        captures          :
+          1:               constant.character.escape.kdl
+        pop               : 1
+      - include           : char-esc-uni🛑
+      - include           : char-esc-uni
+      - include           : u␠␤s🛑”””2
+      - include           : any🛑
+  char-esc-multi2:
+    - match               : '(\\)'
+      scope               : constant.character.escape.kdl punctuation.definition.escape.begin.kdl
+      push                :
+      - match             : '({{esc_char_s}})'
+        captures          :
+          1:               constant.character.escape.kdl
+        pop               : 1
+      - include           : char-esc-uni🛑
+      - include           : char-esc-uni
+      - include           : u␠␤s🛑”””4
+      - include           : any🛑
+  uni⎋s:
+    - match               : '(\\)(u)({)({{d_hex}}{1,6})(})'
+      captures            :
+        1:                 constant.character.escape.kdl punctuation.definition.escape.begin.kdl
+        2:                 constant.character.escape.utf8.hex.kdl
+        3:                 constant.character.escape.utf8.hex.kdl punctuation.definition.usv.begin.kdl
+        4:                 constant.character.escape.utf8.hex.kdl
+        5:                 constant.character.escape.utf8.hex.kdl punctuation.definition.usv.end.kdl
+  char-esc-uni:
+    - match               : '(u)({)({{d_hex}}{1,6})(})'
+      captures            :
+        1:                 constant.character.escape.utf8.hex.kdl
+        2:                 constant.character.escape.utf8.hex.kdl punctuation.definition.usv.begin.kdl
+        3:                 constant.character.escape.utf8.hex.kdl
+        4:                 constant.character.escape.utf8.hex.kdl punctuation.definition.usv.end.kdl
+      pop                 : 1
+  char-esc-uni2:
+    - match               : '(u)({)({{d_hex}}{1,6})(})'
+      captures            :
+        1:                 constant.character.escape.utf8.hex.kdl
+        2:                 constant.character.escape.utf8.hex.kdl punctuation.definition.usv.begin.kdl
+        3:                 constant.character.escape.utf8.hex.kdl
+        4:                 constant.character.escape.utf8.hex.kdl punctuation.definition.usv.end.kdl
+      pop                 : 2
+  char-esc-uni🛑:
+      - match             : '(u)({)({{codepoint_not_hex}})(})'
+        captures          :
+          1:               constant.character.escape.utf8.hex.kdl
+          2:               constant.character.escape.utf8.hex.kdl punctuation.definition.usv.begin.kdl
+          3:               constant.character.escape.utf8.hex.kdl invalid.illegal.muted.position.kdl #🛑codepoint_not_hex
+          4:               constant.character.escape.utf8.hex.kdl punctuation.definition.usv.end.kdl
+        pop               : 1
+      - match             : '(u)({)({{usv_not_hex}})(})'
+        captures          :
+          1:               constant.character.escape.utf8.hex.kdl
+          2:               constant.character.escape.utf8.hex.kdl punctuation.definition.usv.begin.kdl
+          3:               constant.character.escape.utf8.hex.kdl invalid.illegal.muted.position.kdl #🛑usv_not_hex
+          4:               constant.character.escape.utf8.hex.kdl punctuation.definition.usv.end.kdl
+        pop               : 1
+  char-esc-uni🛑2:
+      - match             : '(u)({)({{codepoint_not_hex}})(})'
+        captures          :
+          1:               constant.character.escape.utf8.hex.kdl
+          2:               constant.character.escape.utf8.hex.kdl punctuation.definition.usv.begin.kdl
+          3:               constant.character.escape.utf8.hex.kdl invalid.illegal.muted.position.kdl #🛑codepoint_not_hex
+          4:               constant.character.escape.utf8.hex.kdl punctuation.definition.usv.end.kdl
+        pop               : 2
+      - match             : '(u)({)({{usv_not_hex}})(})'
+        captures          :
+          1:               constant.character.escape.utf8.hex.kdl
+          2:               constant.character.escape.utf8.hex.kdl punctuation.definition.usv.begin.kdl
+          3:               constant.character.escape.utf8.hex.kdl invalid.illegal.muted.position.kdl #🛑usv_not_hex
+          4:               constant.character.escape.utf8.hex.kdl punctuation.definition.usv.end.kdl
+        pop               : 2
+
+  string-quoted-double-raw:
+    - match               : '(r?)(#*)(")'
+      captures            :
+        1:                 invalid.illegal.position.kdl
+        2:                 punctuation.definition.string.begin.kdl
+        3:                 punctuation.definition.string.begin.kdl
+      push                :
+      - meta_scope        : meta.string.kdl string.quoted.double.raw.kdl
+      - match             : '"\2' # ↑match (#*)
+        scope             : punctuation.definition.string.end.kdl
+        pop               : 3
+      - include           : ␤🛑¹s
+  string-quoted-double3-raw:
+    - match               : '(r?)(#*)(""")({{nl_not_s}}?)' #({{nl_not_s}}*)
+      captures            :
+        1:                 invalid.illegal.position.kdl
+        2:                 punctuation.definition.string.begin.kdl
+        3:                 punctuation.definition.string.begin.kdl
+        4:                 invalid.illegal.position.kdl
+        # 5:                 invalid.illegal.muted.position.kdl
+      push                :
+      - meta_scope        : meta.string.kdl string.quoted.double.block.raw.kdl
+      - match             : '^({{u_sp}}*)({{u_sp_not}}?)([\s\S]*?)(""")(\2)' # ↑match (#*)
+      # - match             : '^(\s*)([^\"]?)([^\"]*)(""")'
+        captures          : # will only highlight the last \, don't know how to fix
+          1:               whitespace.dedent.kdl
+          2:               invalid.illegal.position.kdl
+          3:               invalid.illegal.muted.position.kdl
+          4:               punctuation.definition.string.end.kdl
+          5:               punctuation.definition.string.end.kdl
+        pop               : 3
+      - match             : '([\S\s]?)([\S]*)(""")(\2)' # error pop
+        captures          :
+          1:               invalid.illegal.muted.position.kdl #({{nl_not_s}}?) already marked as full error
+          2:               invalid.illegal.muted.position.kdl
+          3:               punctuation.definition.string.end.kdl
+          4:               punctuation.definition.string.end.kdl
+        pop               : 3
+  strings-quoted-double-raw:
+    - match               : '(r?)(#*)(")'
+      captures            :
+        1:                 invalid.illegal.position.kdl
+        2:                 punctuation.definition.string.begin.kdl
+        3:                 punctuation.definition.string.begin.kdl
+      push                :
+      - meta_scope        : meta.string.kdl string.quoted.double.raw.kdl
+      - match             : '"\2' # ↑match (#*)
+        scope             : punctuation.definition.string.end.kdl
+        pop               : 1
+      - include           : ␤🛑¹s
+  strings-quoted-double3-raw:
+    - match               : '(r?)(#*)(""")({{nl_not_s}}?)' #({{nl_not_s}}*)
+      captures            :
+        1:                 invalid.illegal.position.kdl
+        2:                 punctuation.definition.string.begin.kdl
+        3:                 punctuation.definition.string.begin.kdl
+        4:                 invalid.illegal.position.kdl
+        # 5:                 invalid.illegal.muted.position.kdl
+      push                :
+      - meta_scope        : meta.string.kdl string.quoted.double.block.raw.kdl
+      - match             : '^({{u_sp}}*)({{u_sp_not}}?)([\s\S]*?)(""")(\2)' # ↑match (#*)
+      # - match             : '^(\s*)([^\"]?)([^\"]*)(""")'
+        captures          : # will only highlight the last \, don't know how to fix
+          1:               whitespace.dedent.kdl
+          2:               invalid.illegal.position.kdl
+          3:               invalid.illegal.muted.position.kdl
+          4:               punctuation.definition.string.end.kdl
+          5:               punctuation.definition.string.end.kdl
+        pop               : 1
+      - match             : '([\S\s]?)([\S]*)(""")(\2)' # error pop
+        captures          :
+          1:               invalid.illegal.muted.position.kdl #({{nl_not_s}}?) already marked as full error
+          2:               invalid.illegal.muted.position.kdl
+          3:               punctuation.definition.string.end.kdl
+          4:               punctuation.definition.string.end.kdl
+        pop               : 1
+  strings-quoted-double-raw_node-id:
+    - match               : '(r?)(#*)(")'
+      captures            :
+        1:                 invalid.illegal.position.kdl
+        2:                 punctuation.definition.string.begin.kdl
+        3:                 punctuation.definition.string.begin.kdl
+      push                :
+      - meta_scope        : entity.name.tag.node.kdl meta.string.kdl string.quoted.double.raw.kdl
+      - match             : '"\2' # ↑match (#*)
+        scope             : punctuation.definition.string.end.kdl
+        pop               : 1
+      - include           : ␤🛑¹s
+  strings-quoted-double3-raw_node-id:
+    - match               : '(r?)(#*)(""")({{nl_not_s}}?)' #({{nl_not_s}}*)
+      captures            :
+        1:                 invalid.illegal.position.kdl
+        2:                 punctuation.definition.string.begin.kdl
+        3:                 punctuation.definition.string.begin.kdl
+        4:                 invalid.illegal.position.kdl
+        # 5:                 invalid.illegal.muted.position.kdl
+      push                :
+      - meta_scope        : entity.name.tag.node.kdl meta.string.kdl string.quoted.double.block.raw.kdl
+      - match             : '^({{u_sp}}*)({{u_sp_not}}?)([\s\S]*?)(""")(\2)' # ↑match (#*)
+      # - match             : '^(\s*)([^\"]?)([^\"]*)(""")'
+        captures          : # will only highlight the last \, don't know how to fix
+          1:               whitespace.dedent.kdl
+          2:               invalid.illegal.position.kdl
+          3:               invalid.illegal.muted.position.kdl
+          4:               punctuation.definition.string.end.kdl
+          5:               punctuation.definition.string.end.kdl
+        pop               : 1
+      - match             : '([\S\s]?)([\S]*)(""")(\2)' # error pop
+        captures          :
+          1:               invalid.illegal.muted.position.kdl #({{nl_not_s}}?) already marked as full error
+          2:               invalid.illegal.muted.position.kdl
+          3:               punctuation.definition.string.end.kdl
+          4:               punctuation.definition.string.end.kdl
+        pop               : 1
+  # strings-quoted-double-consecutive🛑: #
+  #   - match               : '((?<=#)|(?<="))(")([^"]*")'
+  #     captures            :
+  #       2:                 invalid.illegal.position.kdl #✗”“”s
+  #       3:                 invalid.illegal.muted.position.kdl #✗”“”s
+  #   - match               : '((?<=#)|(?<="))(")([{{u_sp}}\S]*)'
+  #     captures            :
+  #       2:                 invalid.illegal.position.kdl #✗”“s
+  #       3:                 invalid.illegal.muted.position.kdl #✗”“s
+  # string-quoted-double-consecutive🛑3: #
+  #   - match               : '((?<=#)|(?<="))(")([^"]*")'
+  #     captures            :
+  #       2:                 invalid.illegal.position.kdl #✗”“”3
+  #       3:                 invalid.illegal.muted.position.kdl #✗”“”3
+  #     push                :
+  #     - include           : pop3
+  #   - match               : '((?<=#)|(?<="))(")([{{u_sp}}\S]*)'
+  #     captures            :
+  #       2:                 invalid.illegal.position.kdl #✗”“3
+  #       3:                 invalid.illegal.muted.position.kdl #✗”“3
+  #     push                :
+  #     - include           : pop3
+  # string-quoted-double-consecutive🛑4:
+  #   - match               : '((?<=#)|(?<="))(")([^"]*")'
+  #     captures            :
+  #       2:                 invalid.illegal.position.kdl #✗”“”4
+  #       3:                 invalid.illegal.muted.position.kdl #✗”“”4
+  #     push                :
+  #     - include           : pop4
+  #   - match               : '((?<=#)|(?<="))(")([{{u_sp}}\S]*)'
+  #     captures            :
+  #       2:                 invalid.illegal.position.kdl #✗”“4
+  #       3:                 invalid.illegal.muted.position.kdl #✗”“4
+  #     push                :
+  #     - include           : pop4
+  strings-quoted-double-raw-consecutive🛑:
+    - match               : '((?<=#)|(?<="))((?<h>#+)\")([\S\s]*?)(\"\k<h>)'
+      captures            :
+        2:                 invalid.illegal.position.kdl #✗”r“”s
+        4:                 invalid.illegal.muted.position.kdl #✗”r“”s
+        5:                 invalid.illegal.muted.position.kdl #✗”r“”s
+    - match               : '((?<=#)|(?<="))(#+)(")([{{u_sp}}\S]*)'
+      captures            :
+        2:                 invalid.illegal.position.kdl #✗”r“s
+        3:                 invalid.illegal.position.kdl #✗”r“s
+        4:                 invalid.illegal.muted.position.kdl #✗”r“s
+  string-quoted-double-raw-consecutive🛑3:
+    - match               : '((?<=#)|(?<="))((?<h>#+)\")([\S\s]*?)(\"\k<h>)'
+      captures            :
+        2:                 invalid.illegal.position.kdl #✗”r“”3
+        4:                 invalid.illegal.muted.position.kdl #✗”r“”3
+        5:                 invalid.illegal.muted.position.kdl #✗”r“”3
+      push                :
+      - include           : pop3
+    - match               : '((?<=#)|(?<="))(#+)(")([{{u_sp}}\S]*)'
+      captures            :
+        2:                 invalid.illegal.position.kdl #✗”r“3
+        3:                 invalid.illegal.position.kdl #✗”r“3
+        4:                 invalid.illegal.muted.position.kdl #✗”r“3
+      push                :
+      - include           : pop3
+  string-quoted-double-raw-consecutive🛑4:
+    - match               : '((?<=#)|(?<="))((?<h>#+)\")([\S\s]*?)(\"\k<h>)'
+      captures            :
+        2:                 invalid.illegal.position.kdl #✗”r“”4
+        4:                 invalid.illegal.muted.position.kdl #✗”r“”4
+        5:                 invalid.illegal.muted.position.kdl #✗”r“”4
+      push                :
+      - include           : pop4
+    - match               : '((?<=#)|(?<="))(#+)(")([{{u_sp}}\S]*)'
+      captures            :
+        2:                 invalid.illegal.position.kdl #✗”r“4
+        3:                 invalid.illegal.position.kdl #✗”r“4
+        4:                 invalid.illegal.muted.position.kdl #✗”r“4
+      push                :
+      - include           : pop4
+  # bare-after-string🛑: #
+  #   - match               : '((?<=#)|(?<="))({{bareID}})([{{u_sp}}\S]*)'
+  #     captures            :
+  #       2:                 invalid.illegal.position.kdl #✗”bare
+  #       6:                 invalid.illegal.muted.position.kdl #✗”bare
+  #     push                :
+  #     - include           : pop3
+  # bare-after-string🛑4:
+  #   - match               : '((?<=#)|(?<="))({{bareID}})([{{u_sp}}\S]*)'
+  #     captures            :
+  #       2:                 invalid.illegal.position.kdl #✗”bare
+  #       6:                 invalid.illegal.muted.position.kdl #✗”bare
+  #     push                :
+  #     - include           : pop4
+
+  de␠e”””⸮:
+    - match               : '^(?={{u_sp}}*\\)'
+      branch_point        : ⸙de␠e”””⸮
+      branch              :
+        - de␠e_some⸙      # dedent spanning multiple lines ending with """ (clean, no \S errors highlighted)
+        - de␠e_none⸙      # a pop
+  de␠e_some⸙:
+    - meta_content_scope  : whitespace.dedent.kdl
+    - include             : u_sps
+    - include             : w␠⎋s
+    # - match               : '(?<!\\)(""")' # not needed since \ aren't allowed here?
+    #   fail                : ⸙de␠e”””⸮
+    - match               : '(""")'
+      scope               : punctuation.definition.string.end.kdl
+      pop                 : 2
+    - match               : '(?=\S)'
+      fail                : ⸙de␠e”””⸮
+  de␠e_none⸙:
+    - match               : ''
+      pop                 : 1
+
+
+#——— Values - Numbers
+  # int∨dec∨float:
+  #   - match               : '([+-])?([0-9])' # leading zeros are allowed
+  #     captures            :
+  #       1:                  keyword.operator.arithmetic.kdl
+  #     branch_point        : ⸙int∨dec∨float
+  #     branch              :
+  #       - integer⸙        # Integer literal
+  #       - decimal⸙        # Floating point literal (fraction)
+  #       - float⸙          # Floating point literal (exponent)
+  # fail⸙int∨dec∨float-.:
+  #   - match               : '\.'
+  #     fail                : ⸙int∨dec∨float
+  # fail⸙int∨dec∨float-ℯ:
+  #   - match               : '[eE]'
+  #     fail                : ⸙int∨dec∨float
+  # integer⸙:
+  #   - meta_scope          : constant.numeric.value.kdl constant.numeric.integer.kdl
+  #   - include             : fail⸙int∨dec∨float-.
+  #   - include             : fail⸙int∨dec∨float-ℯ
+  #   - include             : digit₁₀_
+  #   - include             : pop3⸙
+  decimal⸙:                                       # Floating point literal (fraction)
+    - meta_scope          : constant.numeric.value.kdl constant.numeric.decimal.kdl
+    - include             : fail⸙int∨dec∨float-ℯ
+    - include             : digit₁₀_
+    - match               : '(\.)(?={{newline}})'
+      # scope               : punctuation.separator.decimal.kdl # no error flash on typing, but not scope color
+      pop                 : 1 # reset meta numeric scope
+      push                :
+      - include           : pop3
+    - match               : '(\.)(?={{u_sp}}|;)'
+      scope               : invalid.illegal.muted.position.kdl
+      pop                 : 1 # reset meta numeric scope
+      push                :
+      - include           : pop3
+    - match               : '(\.)'
+      scope               : punctuation.separator.decimal.kdl
+      push                :
+      - include           : fail⸙int∨dec∨float-ℯ
+      - include           : ℤs
+      - include           : pop4
+    - include             : pop3⸙
+  # float⸙:                                         # Floating point literal (exponent)
+  #   - meta_scope          : constant.numeric.value.kdl constant.numeric.float.kdl constant.numeric.significand.kdl
+  #   - include             : digit₁₀_
+  #   - include             : float．
+  #   - include             : floatℯpartial
+  #   - include             : floatℯ
+  #   - include             : pop3⸙
+  float．:
+    - match               : '(\.)(?={{newline}})'
+      # scope               : punctuation.separator.decimal.kdl # no error flash on typing, but not scope color
+      pop                 : 1 # reset meta numeric scope
+      push                :
+      - include           : pop
+    - match               : '(\.)(?={{u_sp}}|;)'
+      scope               : invalid.illegal.muted.position.kdl
+      pop                 : 1 # reset meta numeric scope
+      push                :
+      - include           : pop
+    - match               : '(\.)(?=[^0-9])'
+      scope               : invalid.illegal.muted.position.kdl
+    - match               : '(\.)'
+      scope               : punctuation.separator.decimal.kdl
+      push                :
+      - include           : digit₁₀_
+      - include           : pop
+  # floatℯpartial:
+  #   - match               : '([eE])([+-])?(?={{nl_s}})'
+  #     captures            :
+  #       1:                  punctuation.separator.exponent.kdl
+  #       2:                  keyword.operator.arithmetic.kdl
+  #     push                :
+  #     - clear_scopes      : 1 # clear previous meta scope significand
+  #     - meta_scope        : constant.numeric.exponent.kdl
+  #     - include           : pop4
+  # floatℯ:
+  #   - match               : '([eE])([+-])?([0-9])'
+  #     captures            :
+  #       1:                  punctuation.separator.exponent.kdl
+  #       2:                  keyword.operator.arithmetic.kdl
+  #     push                :
+  #     - clear_scopes      : 1 # clear previous meta scope significand
+  #     - meta_scope        : constant.numeric.exponent.kdl
+  #     - include           : digit₁₀_
+  #     - include           : pop4
+
+  # binary:                                         # Integer literal (binary)
+  #   - match               : '(0b)(?=[0-1])'
+  #     scope               : constant.numeric.base.kdl
+  #     push                :
+  #     - meta_scope        : constant.numeric.integer.binary.kdl
+  #     - meta_content_scope: constant.numeric.value.kdl
+  #     - include           : ℤ₂
+  # octal:                                          # Integer literal (octal)
+  #   - match               : '(0o)(?=[0-7])'
+  #     scope               : constant.numeric.base.kdl
+  #     push                :
+  #     - meta_scope        : constant.numeric.integer.octal.kdl
+  #     - meta_content_scope: constant.numeric.value.kdl
+  #     - include           : ℤ₈
+  # hexadecimal:                                    # Integer literal (hexadecimal)
+  #   - match               : '(0x)(?=\h)'
+  #     scope               : constant.numeric.base.kdl
+  #     push                :
+  #     - meta_scope        : constant.numeric.integer.hexadecimal.kdl
+  #     - meta_content_scope: constant.numeric.value.kdl
+  #     - include           : ℤ₁₆
+
+  # bin¦oct¦hex-partial:
+  #   - include             : binary-partial
+  #   - include             : octal-partial
+  #   - include             : hexadecimal-partial
+  # binary-partial:
+  #   - match               : '(0b)(?={{nl_s}})'
+  #     scope               : constant.numeric.base.kdl
+  #     push                :
+  #     - meta_scope        : constant.numeric.integer.binary.kdl
+  #     - include           : pop5
+  # octal-partial:
+  #   - match               : '(0o)(?={{nl_s}})'
+  #     scope               : constant.numeric.base.kdl
+  #     push                :
+  #     - meta_scope        : constant.numeric.integer.octal.kdl
+  #     - include           : pop5
+  hexadecimal-partial:
+    - match               : '(0)(x)(?={{nl_s}})'
+      captures            :
+        1:                  constant.numeric.integer.hexadecimal.kdl constant.numeric.base.kdl
+        # 2:                  constant.numeric.integer.hexadecimal.kdl constant.numeric.base.kdl
+      push                :
+      - include           : pop5
+
+  # Values - Numbers (helpers) digit₁₀_
+  # can't match repeatable group in a regex, so repeat a single digit match
+  # ℤ:
+  #   - match               : '([0-9])' # leading zeros are allowed
+  #     push                :
+  #     - include           : digit₁₀_
+  #     - include           : pop4
+  ℤs:
+    - match               : '([0-9])' # leading zeros are allowed
+      push                :
+      - include           : digit₁₀_
+      - include           : pop
+  # ℤ₂:
+  #   - match               : '([0-1])'
+  #     push                :
+  #     - include           : digit₂_
+  #     - include           : pop4
+  # ℤ₈:
+  #   - match               : '([0-7])'
+  #     push                :
+  #     - include           : digit₈_
+  #     - include           : pop4
+  # ℤ₁₆:
+  #   - match               : '(\h)'
+  #     push                :
+  #     - include           : digit₁₆_
+  #     - include           : pop4
+  # digit₁₀_:
+  #   - match               : '(_)|([0-9])'
+  #     captures            :
+  #       1:                  punctuation.separator.number.kdl
+  # digit₂_:
+  #   - match               : '(_)|([0-1])'
+  #     captures            :
+  #       1:                  punctuation.separator.number.kdl
+  # digit₈_:
+  #   - match               : '(_)|([0-7])'
+  #     captures            :
+  #       1:                  punctuation.separator.number.kdl
+  # digit₁₆_:
+  #   - match               : '(_)|([0-9a-fA-F])'
+  #     captures            :
+  #       1:                  punctuation.separator.number.kdl
+
+
+#——— 2 Node Element: 4 Child
+  child_block:            #✗³
+    - match               : '{'
+      scope               : punctuation.section.mapping.begin.kdl
+      push                : child_block-body #✗⁴
+  child_block3:
+    - match               : '{'
+      scope               : punctuation.section.mapping.begin.kdl
+      push                : child_block3-body
+  child_block4:
+    - match               : '{'
+      push                : child_block4-body
+  child_block1:
+    - match               : '{'
+      scope               : punctuation.section.mapping.begin.kdl
+      push                : child_block1-body
+  child_block_on_follow_pop2:  # doesn't include following children blocks, but pops on /- or { so that sibling rules can still allow 1 child or many /-children as needed
+    - match               : '{'
+      scope               : punctuation.section.mapping.begin.kdl
+      push                : child_block_on_follow_pop2-body
+  child_block6:
+    - match               : '{'
+      scope               : punctuation.section.mapping.begin.kdl #✗chblock4
+      push                : child_block6-body
+  child_block-body:       #✗⁴
+    - meta_scope          : meta.block.child.kdl
+    - include             : wss
+    - include             : comment_line_no␤
+    - include             : ｝ch2t3
+    - match               : '(?=\S)'
+      push                : nodes #✗⁵
+  child_block3-body:
+    - meta_scope          : meta.block.child.kdl
+    - include             : wss
+    - include             : comment_line_no␤
+    - include             : ｝ch1t3
+    - match               : '(?=\S)'
+      push                : nodes
+  child_block4-body:
+    - meta_scope          : meta.block.child.kdl
+    - include             : wss
+    - include             : comment_line_no␤
+    - include             : ｝ch1t4
+    - match               : '(?=\S)'
+      push                : nodes
+  child_block1-body:
+    - meta_scope          : meta.block.child.kdl
+    - include             : wss
+    - include             : comment_line_no␤
+    - include             : ｝ch0t2
+    - match               : '(?=\S)'
+      push                : nodes
+    # - include             : pop2
+  child_block_on_follow_pop2-body:
+    - meta_scope          : meta.block.child.kdl
+    - include             : wss
+    - include             : comment_line_no␤
+    - include             : ｝1t2nofolpop1⸮
+    - match               : '(?=\S)'
+      push                : nodes
+    # - include             : pop2
+  child_block6-body:
+    - meta_scope          : meta.block.child.kdl #✗chblock4_body
+    - include             : wss
+    - include             : comment_line_no␤
+    - include             : ｝2t4
+    - match               : '(?=\S)'
+      push                : nodes
+
+
+#——— 2 Node Element: 5 End
+  # node_terminator:        # node_end ≝ comment_line | ␤ | ； | eof
+  #   - include             : comment_line
+  #   - include             : ␤
+  #   - include             : eof
+  #   # - include             : pop｝
+  #   - match               : ;
+  #     scope               : punctuation.terminator.node.kdl
+  #     pop                 : 1
+  #   - include             : ｝🛑
+  # node_terminator🛑2:
+  #   - include             : comment_line🛑2
+  #   - include             : ␤🛑2
+  #   # - include             : eof
+  #   - match               : ;
+  #     scope               : invalid.illegal.position.kdl
+  #     pop                 : 2
+  #   - include             : ｝🛑2
+  # node_terminator🛑3:
+  #   - include             : comment_line🛑3
+  #   - include             : ␤🛑3
+  #   # - include             : eof
+  #   - match               : ;
+  #     scope               : invalid.illegal.position.kdl
+  #     pop                 : 3
+  #   - include             : ｝🛑3
+  # node_terminator2:       # X pops to allow the convenience of earlier pushes to e.g. track node level and ensure arguments have mandatory ws
+  #   - include             : comment_line2_term
+  #   - include             : ␤term2
+  #   - include             : eof2
+  #   - match               : ;
+  #     scope               : punctuation.terminator.node.kdl
+  #     pop                 : 2
+  #   - include             : ｝🛑2
+  node_end5:
+    - include             : comment_line5_term
+    - include             : ␤term5
+    - include             : eof5
+    - match               : ;
+      scope               : punctuation.terminator.node.kdl
+      pop                 : 5
+  node_end4:
+    - include             : comment_line4_term
+    - include             : ␤term4
+    - include             : eof4
+    - match               : ;
+      scope               : punctuation.terminator.node.kdl
+      pop                 : 4
+  node_end3:
+    - include             : comment_line3_term
+    - include             : ␤term3
+    - include             : eof3
+    - match               : ;
+      scope               : punctuation.terminator.node.kdl
+      pop                 : 3
+  node_end2:
+    - include             : comment_line2_term
+    - include             : ␤term2
+    - include             : eof2
+    - match               : ;
+      scope               : punctuation.terminator.node.kdl
+      pop                 : 2
+  node_end: # node_end ≝ comment_line | ␤ | ； | eof
+    - include             : comment_line_term
+    - include             : ␤term
+    - include             : eof
+    - match               : ;
+      scope               : punctuation.terminator.node.kdl
+      pop                 : 1
+  pop_pre_node_end:
+    - include             : pop_precoml
+    - include             : ␤1
+    - include             : ␃
+    - include             : ；
+  pop2_pre_node_end:
+    - include             : pop2_precoml
+    - include             : ␤2
+    - include             : ␃2
+    - include             : ；2
+  pop3_pre_node_end:
+    - include             : pop3_precoml
+    - include             : ␤3
+    - include             : ␃3
+    - include             : ；3
+  node_terminator3:
+    - include             : node_end3
+    - include             : ｝🛑3
+  nodech_terminator3⸮:
+    - include             : node_end3
+    - include             : ｝3 # don't error on } at last child
+    - include             : ｝🛑3
+  nodech_terminator2:
+    - include             : node_end2
+    - include             : ｝🛑2
+  nodech_terminator2⸮:
+    - include             : node_end2
+    - include             : ｝2
+    - include             : ｝🛑2
+  nodech_terminator⸮:
+    - include             : node_end
+    - include             : ｝
+    - include             : ｝🛑2
+  nodech_terminator:
+    - include             : node_end
+    - include             : ｝🛑
+  # node_terminator4:
+  #   - include             : comment_line4_term
+  #   - include             : ␤term4
+  #   - include             : eof4
+  #   - match               : ;
+  #     scope               : punctuation.terminator.node.kdl
+  #     pop                 : 4
+  #   - include             : ｝🛑4
+
+  ｝1t3:
+    - match               : '}'
+    # - match               : '}|(?<=})' # alternative to hunting down space} to highlight the missing ;
+    # - match               : '}|(?!{{nl_s}})(?<=})' # better alternative to avoid end} breaking next }
+      scope               : punctuation.section.mapping.end.kdl
+      pop                 : 2
+      push                :
+      - include           : wss
+      - include           : node_terminator3
+      - include           : S🛑¹pre␤
+  ｝0t2:
+    - match               : '}'
+      scope               : punctuation.section.mapping.end.kdl
+      pop                 : 1 # reset meta child scope
+      push                :
+      - include           : wss
+      - include           : node_terminator2
+      - include           : S🛑¹pre␤
+  ｝1t2nofolpop1⸮:
+    - match               : '}'
+      scope               : meta.block.child.kdl punctuation.section.mapping.end.kdl
+      pop                 : 2
+      push                :
+      - include           : wss
+      - include           : nodech_terminator2⸮
+      - match             : '(?=/-|{)'
+        pop               : 2
+      - include           : S🛑¹pre_ws
+  ｝ch0t2: # allows /-{ch} blocks to continue after the ending
+    - match               : '}'
+      scope               : meta.block.child.kdl punctuation.section.mapping.end.kdl
+      pop                 : 1
+      push                :
+      - include           : wss
+      - include           : node_end2
+      - include           : node_children⁄-s
+      - include           : pop2
+  ｝ch1t3:
+    - match               : '}'
+      scope               : meta.block.child.kdl punctuation.section.mapping.end.kdl
+      pop                 : 2
+      push                :
+      - include           : wss
+      - include           : node_end3
+      - include           : node_children⁄-s
+      - include           : pop3
+  ｝ch1t4:
+    - match               : '}'
+      scope               : meta.block.child.kdl punctuation.section.mapping.end.kdl
+      pop                 : 3
+      push                :
+      - include           : wss
+      - include           : node_end4
+      - include           : node_children⁄-s
+      - include           : pop4
+  ｝2t3:
+    - match               : '}'
+      scope               : punctuation.section.mapping.end.kdl
+      pop                 : 3
+      push                :
+      - include           : wss
+      - include           : node_terminator3
+      - include           : S🛑¹pre␤
+  ｝ch2t3:
+    - match               : '}'
+      scope               : meta.block.child.kdl punctuation.section.mapping.end.kdl
+      pop                 : 3
+      push                :
+      - include           : wss
+      - include           : node_end3
+      - include           : node_children⁄-s
+      - include           : pop3
+  ｝2t4:
+    - match               : '}'
+      scope               : punctuation.section.mapping.end.kdl
+      pop                 : 3
+      push                :
+      - include           : wss
+      - include           : node_terminator4
+      - include           : S🛑¹pre␤
+  # pre｝🛑:                # missing node terminator before }, requires hunting down for space before }, which nodespace or other rule can handle already
+  #   - match               : '{{u_sp}}*?({{u_sp}})?(?=\})'
+  #     captures            :
+  #       1:                  invalid.illegal.kdl
+  #     pop                 : 1
+  # ｝🛑:
+  #   - match               : '}'
+  #     scope               : punctuation.section.mapping.end.kdl invalid.illegal.position.kdl #✗｝🛑
+  #     pop                 : 1
+  # ｝🛑2:
+  #   - match               : '}'
+  #     scope               : punctuation.section.mapping.end.kdl invalid.illegal.position.kdl #✗｝🛑2
+  #     pop                 : 2
+  # ｝🛑3:
+  #   - match               : '}'
+  #     scope               : punctuation.section.mapping.end.kdl invalid.illegal.position.kdl #✗｝🛑3
+  #     pop                 : 3
+  #     push                :
+  #     - include           : wss
+  #     - include           : node_terminator3
+  #     - include           : S🛑¹pre␤
+
+  # ｝🛑4:
+  #   - match               : '}'
+  #     scope               : punctuation.section.mapping.end.kdl invalid.illegal.position.kdl #✗｝🛑4
+  #     pop                 : 4
+  #     push                :
+  #     - include           : wss
+  #     - include           : node_terminator3
+  #     - include           : S🛑¹pre␤
+  # ｝:
+  #   - match               : '(?=\})'
+  #     pop                 : 1
+  # ｝2:
+  #   - match               : '(?=\})'
+  #     pop                 : 2
+  # ｝3:
+  #   - match               : '(?=\})'
+  #     pop                 : 3
+  # ｝4:
+  #   - match               : '(?=\})'
+  #     pop                 : 4
+  ｛:
+    - match               : '(?=\{)'
+      pop                 : 1
+  ｛2:
+    - match               : '(?=\{)'
+      pop                 : 2
+  ｛3:
+    - match               : '(?=\{)'
+      pop                 : 3
+  ｛4:
+    - match               : '(?=\{)'
+      pop                 : 4
+
+  escline:                # ≝ escline = ⧵ cu␠* ⦅comment_line | ␤ | eof⦆
+    - match               : \\
+      scope               : punctuation.separator.continuation.line.kdl
+      push                :
+      - include           : wss
+      - include           : comment_line
+      - include           : ␤
+      - include           : eof
+      - include           : S🛑¹pre_ws1 # error first invalid continuation, then pop
+  line_continuation:      # ≝ escline = \ ws* (single-line-comment     | newline)
+                          #                  =↑single-line-comment_no_nl newline
+    - match               : \\
+      scope               : punctuation.separator.continuation.line.kdl #✗lc
+      push                : line_continuation-line1
+  # line_continuations:
+  #   - match               : \\
+  #     scope               : punctuation.separator.continuation.line.kdl #✗lcs
+  #     push                : line_continuations-line1
+  line_continuation-line1:
+    - include             : wss                         # ≝ ... ws*
+    - include             : comment_line_no␤           # ≝ ... single-line-comment (without newline, so ↓ captures)
+    - match               : '({{nl_s}})'                # ≝ ... newline
+      #scope               : dbg✗line_continuation-line1
+      set                 : line_continuation-line_next
+    - include             : S🛑¹pre_ws1 # error first invalid continuation, then pop
+    # - include             : S🛑s
+  line_continuations-line1:
+    #- meta_scope          : dbg✗line_continuations-line1
+    # - include             : keyword-partial
+    - include             : wss
+    - include             : comment_line_no␤
+    - match               : '({{nl_s}})'
+      set                 : line_continuations-line_next
+    - include             : S🛑¹pre_ws1 # error first invalid continuation, then pop
+    # - include             : S🛑s
+  line_continuation-line_next:
+    - include             : wss
+    - include             : comment_line_no␤
+    - include             : ␤
+    # - match               : \\                          # disallows repeated
+    #   scope               : punctuation.separator.continuation.line.kdl invalid.illegal.position.kdl
+    #   # pop                 : 1                         # disallows 2nd \, but not 3rd+
+    - include             : else-pop
+    # - include             : else-pop2                   # 2 disallows repeated \, but requires extra push before use
+  line_continuations-line_next:
+    - include             : wss
+    - include             : comment_lines_no␤
+    - include             : ␤
+    - include             : else-pop
+
+
+#——— Comments
+  # comment_block_doc       :                       # Block documentation comment
+  #   - match               : '({{comment_block_doc_beg}})'
+  #     scope               : punctuation.definition.comment.begin.kdl
+  #     push                :
+  #     - meta_scope        : comment.block.documentation.kdl
+  #     - match             : '{{comment_block_end}}'
+  #       scope             : punctuation.definition.comment.end.kdl
+  #       pop               : 1
+  #     - include           : comment_block_doc
+  #     - include           : comment_block
+  # comment_block           :                       # Block comment
+  #   - match               : '({{comment_block_beg}})'
+  #     scope               : punctuation.definition.comment.begin.kdl
+  #     push                :
+  #     - meta_scope        : comment.block.kdl
+  #     - match             : '{{comment_block_end}}'
+  #       scope             : punctuation.definition.comment.end.kdl
+  #       pop               : 1
+  #     - include           : comment_block_doc
+  #     - include           : comment_block
+  # comment_line:                                   # Single-line comment
+  #   - match               : // # better than {{comment_line}} as doesn't consume the whole line and allows embedding with early popping
+  #     scope               : punctuation.definition.comment.begin.kdl
+  #     push                :
+  #       - meta_scope      : comment.line.double-slash.kdl
+  #       - match           : $({{newline}})? # consume ␤ not to show completions when typing comments
+  #         pop             : 2
+  #         captures        :
+  #           1:              punctuation.definition.comment.end.kdl
+  comment_lines:                                  # Single-line comment
+    - match               : // # better than {{comment_line}} as doesn't consume the whole line and allows embedding with early popping
+      scope               : punctuation.definition.comment.begin.kdl
+      push                :
+        - meta_scope      : comment.line.double-slash.kdl
+        - match           : $({{newline}})? # consume ␤ not to show completions when typing comments
+          pop             : 1
+          captures        :
+            1:              punctuation.definition.comment.end.kdl
+  # comment_line🛑:
+  #   - match               : //
+  #     scope               : invalid.illegal.position.kdl
+  #     push                :
+  #       - meta_scope      : comment.line.double-slash.kdl
+  #       - match           : $({{newline}})?
+  #         pop             : 2
+  #         captures        :
+  #           1:              punctuation.definition.comment.end.kdl
+  # comment_line🛑2:
+  #   - match               : //
+  #     scope               : invalid.illegal.position.kdl
+  #     push                :
+  #       - meta_scope      : comment.line.double-slash.kdl
+  #       - match           : $({{newline}})?
+  #         pop             : 3
+  #         captures        :
+  #           1:              punctuation.definition.comment.end.kdl
+  # comment_line🛑3:
+  #   - match               : //
+  #     scope               : invalid.illegal.position.kdl
+  #     push                :
+  #       - meta_scope      : comment.line.double-slash.kdl
+  #       - match           : $({{newline}})?
+  #         pop             : 4
+  #         captures        :
+  #           1:              punctuation.definition.comment.end.kdl
+  comment_line_term:      #✗
+    - match               : //
+      scope               : punctuation.definition.comment.begin.kdl punctuation.terminator.node.kdl
+      push                :    #→✗+1
+        - meta_scope      : comment.line.double-slash.kdl
+        - match           : $({{newline}})?
+          pop             : 2 #→✗
+          captures        :
+            1:              punctuation.definition.comment.end.kdl
+  # comment_line2_term:
+  #   - match               : //
+  #     scope               : punctuation.definition.comment.begin.kdl punctuation.terminator.node.kdl
+  #     push                :
+  #       - meta_scope      : comment.line.double-slash.kdl
+  #       - match           : $({{newline}})?
+  #         pop             : 3
+  #         captures        :
+  #           1:              punctuation.definition.comment.end.kdl
+  # comment_line3_term:
+  #   - match               : //
+  #     scope               : punctuation.definition.comment.begin.kdl punctuation.terminator.node.kdl
+  #     push                :
+  #       - meta_scope      : comment.line.double-slash.kdl
+  #       - match           : $({{newline}})?
+  #         pop             : 4
+  #         captures        :
+  #           1:              punctuation.definition.comment.end.kdl
+  # comment_line4_term:
+  #   - match               : //
+  #     scope               : punctuation.definition.comment.begin.kdl punctuation.terminator.node.kdl
+  #     push                :
+  #       - meta_scope      : comment.line.double-slash.kdl
+  #       - match           : $({{newline}})?
+  #         pop             : 5
+  #         captures        :
+  #           1:              punctuation.definition.comment.end.kdl
+  pop3_pre_esc:
+    - match               : (?={{escline_beg}})
+      pop                 : 3
+  pop3_precc:
+    - match               : (?={{cc_beg}})
+      pop                 : 3
+  pop3_precoml:
+    - match               : (?={{c_line_beg}})
+      pop                 : 3
+  pop2_precoml:
+    - match               : (?={{c_line_beg}})
+      pop                 : 2
+  pop_precoml:
+    - match               : (?={{c_line_beg}})
+      pop                 : 1
+  comment_line5_term:
+    - match               : //
+      scope               : punctuation.definition.comment.begin.kdl punctuation.terminator.node.kdl
+      push                :   #✗+1
+        - meta_scope      : comment.line.double-slash.kdl
+        - match           : $({{newline}})?
+          pop             : 6 #✗-5
+          captures        :
+            1:              punctuation.definition.comment.end.kdl
+  # comment_line_no␤:                             # Single-line comment without capturing ending ␤
+  #   - match               : //
+  #     scope               : punctuation.definition.comment.begin.kdl #✗cline_no␤
+  #     push                :
+  #       - meta_scope      : comment.line.double-slash.kdl
+  #       - match           : $
+  #         pop             : 1
+  # comment_line2_no␤:
+  #   - match               : //
+  #     scope               : punctuation.definition.comment.begin.kdl #✗cline_no␤
+  #     push                :
+  #       - meta_scope      : comment.line.double-slash.kdl
+  #       - match           : $
+  #         pop             : 2
+  # comment_lines_no␤:
+  #   - match               : //
+  #     scope               : punctuation.definition.comment.begin.kdl #✗cline_no␤
+  #     push                :
+  #       - meta_scope      : comment.line.double-slash.kdl
+  #       - match           : $
+  #         pop             : 1
+
+
+# Primitives, with some ~matching KDL Spec elements
+  linesp:                 #l_␠ ≝ n␠|␤|comment_line
+    - include             : ␤
+    - include             : node␠
+    - include             : comment_line #todo: bugs with } on a line after //
+    # - include             : comment_line_no␤
+  l_␠s:
+    - include             : ␤s
+    - include             : node␠s
+    - include             : comment_lines
+    # - include             : comment_line_no␤
+  w␠⎋s:
+    - match               : '(\\)(?={{uspnl}})'
+      scope               : constant.character.escape.kdl punctuation.definition.escape.begin.kdl
+      push                :
+      - include           : u␠␤s
+      - include           : any🛑
+  u␠␤s:   # Regular and line breaking whitespace
+    - match               : '({{uspnl}})'
+      scope               : whitespace.escape.kdl
+      push                : # to "glue" contiguous spaces together with the same scope
+      - match             : '({{uspnl}})'
+        scope             : whitespace.escape.kdl
+      - include           : else-pop2
+  u␠␤s2:
+    - match               : '({{uspnl}})'
+      scope               : whitespace.escape.kdl
+      push                : # to "glue" contiguous spaces together with the same scope
+      - match             : '({{uspnl}})'
+        scope             : whitespace.escape.kdl
+      - include           : else-pop3
+  de␠e_s: # de␠e ≝ u␠ | w␠⎋
+    - match               : '^(?={{u_sp}})'
+      push                :
+      - meta_scope        : whitespace.dedent.kdl
+      - include           : u_sps
+      - include           : w␠⎋s
+      - include           : else-pop
+  # ␤s:
+  #   - match               : '{{newline}}'
+  #     #scope               : dbg✗␤s
+  # ␤:
+  #   - match               : '{{newline}}'
+  #     #scope               : dbg✗␤
+  #     pop                 : 1
+  ␤term:
+    - match               : '{{newline}}'
+      scope               : punctuation.terminator.node.kdl #✗␤1
+      pop                 : 1
+  # ␤term2:
+  #   - match               : '{{newline}}'
+  #     scope               : punctuation.terminator.node.kdl #✗␤2
+  #     pop                 : 2
+  # ␤term3:
+  #   - match               : '{{newline}}'
+  #     scope               : punctuation.terminator.node.kdl #✗␤3
+  #     pop                 : 3
+  # ␤term4:
+  #   - match               : '{{newline}}'
+  #     scope               : punctuation.terminator.node.kdl #✗␤4
+  #     pop                 : 4
+  ␤term5:
+    - match               : '{{newline}}'
+      scope               : punctuation.terminator.node.kdl #✗␤5
+      pop                 : 5
+  # eof:
+  #   - match               : '{{eof}}'
+  #     #scope               : dbg✗eof
+  #     pop                 : 1
+  # eof2:
+  #   - match               : '{{eof}}'
+  #     #scope               : dbg✗eof
+  #     pop                 : 2
+  # eof3:
+  #   - match               : '{{eof}}'
+  #     #scope               : dbg✗eof
+  #     pop                 : 3
+  # eof4:
+  #   - match               : '{{eof}}'
+  #     #scope               : dbg✗eof
+  #     pop                 : 4
+  eof5:
+    - match               : '{{eof}}'
+      #scope               : dbg✗eof
+      pop                 : 5
+  ␃3:
+    - match               : '(?={{eof}})'
+      pop                 : 3
+  ␃2:
+    - match               : '(?={{eof}})'
+      pop                 : 2
+  ␃:
+    - match               : '(?={{eof}})'
+      pop                 : 1
+  ；3:
+    - match               : '(?=;)'
+      pop                 : 3
+  ；2:
+    - match               : '(?=;)'
+      pop                 : 2
+  ；:
+    - match               : '(?=;)'
+      pop                 : 1
+
+  ws:                     # ≝ unicode-space | multi-line-comment
+    - include             : u_sp
+    - include             : comment_block∨doc
+  wss:
+    - include             : u_sps
+    - include             : comment_block∨doc
+  # bom:
+  #   - match               : '{{bom}}'
+  #     #scope               : dbg✗bom
+  #     pop                 : 1
+  # boms:
+  #   - match               : '{{bom}}'
+  #     #scope               : dbg✗boms
+  # u_sp:
+  #   - match               : '{{u_sp}}'
+  #     #scope               : dbg✗␠
+  #     pop                 : 1
+  # u_sps:
+  #   - match               : '{{u_sp}}'
+  #     #scope               : dbg✗␠s
+
+  node␠:                 # ≝ node-space: ws* escline ws* | ws+
+    - include             : line_continuation
+    - include             : ws+∨ws-line⎋-ws
+  node␠s:
+    - include             : line_continuations
+    - include             : wss # todo: don't need branching?
+  node␠⁄-:                #
+    - include             : line_continuation⁄-
+    - include             : ws+∨ws-line⎋-ws
+  # ws+∨ws-line⎋-ws:
+  #   - match               : '(?={{ws_beg}})'
+  #     branch_point        : ⸙ws+∨ws-line⎋-ws
+  #     branch              :
+  #       - ws+⸙1
+  #       - ws-line⎋-ws⸙1
+  # ws+∨ws-line⎋-ws⁄-:
+  #   - match               : '(?={{ws_beg}})'
+  #     branch_point        : ⸙ws+∨ws-line⎋-ws⁄-
+  #     branch              :
+  #       - ws+⁄-⸙1
+  #       - ws-line⎋-ws⁄-⸙1
+  # ws+⸙1:
+  #   #- meta_scope          : dbg✗node␠_ws+∨ws-line⎋-ws_ws+⸙1
+  #   - match               : '(?={{escline_beg}})'
+  #     fail                : ⸙ws+∨ws-line⎋-ws
+  #   - include             : wss
+  #   - include             : pop⸙
+  #   # - meta_scope          : ✗ws+⸙1
+  #   # - match               : '{{u_sp}}'
+  #     # scope               : bsp✗ws+⸙1
+  #   # - include             : comment_block∨doc
+  #   # - include             : node-elements
+  #   # - match               : '(?={{ws_beg}})'
+  #     # push                :
+  #     # - include           : ws-pop2
+  #   # - include             : any🛑
+  # ws+⁄-⸙1:
+  #   - match               : '(?={{escline_beg}})'
+  #     fail                : ⸙ws+∨ws-line⎋-ws⁄-
+  #   - include             : wss
+  #   - include             : pop⸙
+  # ws-line⎋-ws⸙1:
+  #   - include             : wss
+  #   - include             : line_continuation
+  #   - include             : pop⸙
+  #   # - meta_scope          : ✗ws-line⎋-ws⸙1
+  #   # - match               : '{{u_sp}}'
+  #   #   scope               : bsp✗ws-line⎋-ws⸙1
+  #   # - include             : comment_block∨doc
+  # ws-line⎋-ws⁄-⸙1:
+  #   - include             : wss
+  #   - include             : line_continuation⁄-
+  #   - include             : pop⸙
+  # node␠+:
+  #   - include             : node␠
+  #   - include             : any🛑
+
+
+
+# Various helpers
+  ch🛑s:
+    - match               : '{{char_illegal}}'
+      scope               : invalid.illegal.kdl
+  ch🛑:
+    - match               : '{{char_illegal}}'
+      scope               : invalid.illegal.kdl
+      pop                 : 1
+  # ␤🛑s:
+  #   - match               : '{{nl_s}}'
+  #     scope               : invalid.illegal.position.kdl #✗delnl
+  # ␤🛑:
+  #   - match               : '{{nl_s}}'
+  #     scope               : invalid.illegal.position.kdl #✗delnl1
+  #     pop                 : 1
+  # ␤🛑2:
+  #   - match               : '{{nl_s}}'
+  #     scope               : invalid.illegal.position.kdl #✗delnl2
+  #     pop                 : 2
+  # ␤🛑3:
+  #   - match               : '{{nl_s}}'
+  #     scope               : invalid.illegal.position.kdl #✗delnl3
+  #     pop                 : 3
+  # ␤🛑¹s:                 # make only the first contiguous ␤ red
+  #   - match               : '({{nl_s}})'
+  #     scope               : invalid.illegal.position.kdl #✗1
+  #     push                :
+  #     - match             : '({{nl_s}})'
+  #       scope             : invalid.illegal.muted.position.kdl #✗1b
+  #     - include           : else-pop
+  # any🛑s:
+  #   - match               : '[\S\s]'
+  #     scope               : invalid.illegal.position.kdl #✗DelAny🛑s
+  # any🛑:
+  #   - match               : '[\S\s]'
+  #     scope               : invalid.illegal.position.kdl #✗DelAny🛑
+  #     pop                 : 1
+  # s🛑¹:                   # make only the first contiguous \s red
+  #   - match               : '(\s)'
+  #     scope               : invalid.illegal.position.kdl #✗s🛑¹s
+  #     push                :
+  #     - match             : '(\s)'
+  #       scope             : invalid.illegal.muted.position.kdl #✗s🛑¹s
+  #       pop               : 2    # bail out after 2nd space
+  #     - include           : pop2 # bail out after 1st space
+  # s🛑¹s:                  # make only the first contiguous \s red
+  #   - match               : '(\s)'
+  #     scope               : invalid.illegal.position.kdl #✗s🛑¹s
+  #     push                :
+  #     - match             : '(\s)'
+  #       scope             : invalid.illegal.muted.position.kdl #✗s🛑¹s
+  #     - include           : pop # repeat 2nd space
+  # bsp🛑¹s:                  # make only the first contiguous u_sp red
+  #   - match               : '({{u_sp}})'
+  #     scope               : invalid.illegal.position.kdl #✗bsp🛑¹s
+  #     push                :
+  #     - match             : '({{u_sp}})'
+  #       scope             : invalid.illegal.muted.position.kdl #✗bsp🛑¹s
+  #     - include           : pop # repeat 2nd space
+  # s🛑s:
+  #   - match               : '(\s)'
+  #     scope               : invalid.illegal.position.kdl #✗2
+  # s🛑:
+  #   - match               : '(\s)'
+  #     scope               : invalid.illegal.position.kdl #✗3
+  #   - include             : else-pop
+  # S🛑s:
+  #   - match               : '(\S)'
+  #     scope               : invalid.illegal.position.kdl #✗S🛑
+  S🛑s_mute:
+    - match               : '(\S)'
+      scope               : invalid.illegal.muted.position.kdl #✗S🛑smute
+  # S🛑:
+  #   - match               : '(\S)'
+  #     scope               : invalid.illegal.position.kdl #✗S🛑
+  #     pop                 : 1
+  # S🛑pre␠:               # mark without red highlight
+  #   - match               : '(\S*)(?={{u_sp}})'
+  #     captures            :
+  #       2:                  invalid.illegal.muted.position.kdl #✗S🛑pre␠
+  ch🛑pre␠:              # to avoid red flashes, mark last char as illegal before ␠
+    - match               : '({{charID_or_KW}}*)({{charID_or_KW}})(?={{u_sp}})'
+      captures            :
+        1:                  invalid.illegal.muted.position.kdl #✗ch🛑pre␠
+        2:                  invalid.illegal.position.kdl #✗ch🛑pre␠
+  sd🛑pre␠:
+    - match               : '({{c_slashdash}})(\S*)(?={{u_sp}})'
+      captures            :
+        1:                  invalid.illegal.position.kdl
+        2:                  invalid.illegal.muted.position.kdl
+  sd🛑pre␤:
+    - match               : '({{c_slashdash}})(\S*)(?={{nl_s}})'
+      captures            :
+        1:                  invalid.illegal.muted.position.kdl
+        2:                  invalid.illegal.muted.position.kdl
+  # ch🛑pre-str:
+  #   - match               : '({{charID}}*?)({{charID}})(?={{string_beg}})'
+  #     captures            :
+  #       1:                  invalid.illegal.muted.position.kdl #✗ch🛑pre-str
+  #       2:                  invalid.illegal.position.kdl #✗ch🛑pre-str
+  # ch🛑pre_term:           # to avoid red flashes, mark last char as illegal before node terminator
+  #   - match               : '({{charID}}*)({{charID}})(?={{node_term_beg_no_nl}})'
+  #     captures            :
+  #       1:                  invalid.illegal.muted.position.kdl #✗ch🛑pre_term
+  #       2:                  invalid.illegal.position.kdl #✗ch🛑pre_term
+  # S🛑pre␤:               # to avoid red flashes, mark as invalid, not illegal
+  #   - match               : '(\S*)(\S)(?=\n)'
+  #     captures            :
+  #       1:                  invalid.illegal.muted.position.kdl
+  #       2:                  invalid.illegal.muted.position.kdl
+  # S🛑¹pre␤:              # make only the first char before ␤ red
+  #   - match               : '(\S)'
+  #     scope               : invalid.illegal.position.kdl #✗S🛑¹pre␤
+  #     push                :
+  #     - include           : pop_pre␤
+  #     - match             : '(\S)'
+  #       scope             : invalid.illegal.muted.position.kdl #✗S🛑¹pre␤
+  # S🛑¹pre_ws:             # ... ␠ ␤
+  #   - match               : '(\S)'
+  #     scope               : invalid.illegal.position.kdl #✗S🛑¹pre␤
+  #     push                :
+  #     - include           : pop_pre␠
+  #     - include           : pop_pre␤
+  #     - match             : '(\S)'
+  #       scope             : invalid.illegal.muted.position.kdl #✗S🛑¹pre␤
+  S🛑¹pre_ws1:             # ... ␠ ␤ but pop at the end
+    - match               : '(\S)'
+      scope               : invalid.illegal.position.kdl #✗S🛑¹pre␤
+      push                :
+      - include           : pop2_pre␠
+      - include           : pop2_pre␤
+      - match             : '(\S+)'
+        scope             : invalid.illegal.muted.position.kdl #✗S🛑¹pre␤
+        pop               : 2
+  # S🛑¹pre_s∨c∨t:          # ... child start or node terminator or ws
+  #   - match               : '(\S)'
+  #     scope               : invalid.illegal.position.kdl #✗S🛑¹pre_s∨c∨t
+  #     push                :
+  #     - include           : pop_pre-ch
+  #     - include           : pop_pre-term
+  #     - include           : pop_pre-node␠
+  #     - match             : '(\S)'
+  #       scope             : invalid.illegal.muted.position.kdl #✗S🛑¹pre_s∨c∨t
+  S🛑¹”””p2:              # pop 2 before """, color last char pre quotes as error, not full text
+  - match                 : '(\S)'
+    # scope                 : invalid.illegal.position.kdl #✗S🛑¹”””p2
+    push                  :
+    - match               : '(\S?)(")("")'
+      captures            :
+        1                 : invalid.illegal.position.kdl
+        2                 : invalid.illegal.position.kdl punctuation.definition.string.end.kdl
+        3                 : invalid.illegal.muted.position.kdl punctuation.definition.string.end.kdl
+      pop                 : 3
+    # - include             : S🛑s_mute
+  S🛑¹”””p4:              # pop 4 before """
+  - match                 : '(\S)'
+    # scope                 : invalid.illegal.muted.position.kdl #✗S🛑¹”””p4
+    push                  :
+    - match               : '(\S?)(")("")'
+      captures            :
+        1                 : invalid.illegal.position.kdl
+        2                 : invalid.illegal.position.kdl punctuation.definition.string.end.kdl
+        3                 : invalid.illegal.muted.position.kdl punctuation.definition.string.end.kdl
+      pop                 : 5
+    # - include             : S🛑s_mute
+
+
+  # char🆔¬:
+  #   - match               : '{{charID_not}}'
+  #     scope               : invalid.illegal.kdl #✗chID
+  ID_bare¬1st🛑:
+    # - match               : '({{charID_not1st}})'
+    - match               : '(?<!=){{charID_not1st}}' # K=V lookbehind prevents matching V after K fails
+      captures            : # charID_not1st has 2 groups inside
+        1:                  invalid.illegal.position.kdl
+        2:                  invalid.illegal.position.kdl
+        3:                  invalid.illegal.muted.position.kdl
+      # pop                 : 1 # alternative without lookbehind, but this resets = to node, so worse?
+  ID_bare_s🛑: # bans anything except node␠ or closing ) after bareID has begun
+    - match               : '({{bareID}})'
+      push:
+      - match             : '(?=\))'
+        pop               : 1
+      - include           : node␠
+      - match             : '([^\)])([^\)]*)'
+        captures          :
+          1:                invalid.illegal.position.kdl
+          2:                invalid.illegal.muted.position.kdl
+        # pop               : 1
+  u␠␤s🛑”””2:
+    - match               : '({{uspnl}})'
+      scope               : whitespace.escape.kdl
+      push                : # to "glue" contiguous spaces together with the same scope
+      - match             : '({{uspnl}})'
+        scope             : whitespace.escape.kdl
+      - match             : '(")("")'
+        captures          :
+          1:               invalid.illegal.position.kdl punctuation.definition.string.end.kdl
+          2:               invalid.illegal.muted.position.kdl punctuation.definition.string.end.kdl
+        pop               : 3
+      - include           : else-pop2
+  u␠␤s🛑”””4:
+    - match               : '({{uspnl}})'
+      scope               : whitespace.escape.kdl
+      push                : # to "glue" contiguous spaces together with the same scope
+      - match             : '({{uspnl}})'
+        scope             : whitespace.escape.kdl
+      - match             : '(")("")' # let multi-line handle these errors
+        captures          :
+          1:               invalid.illegal.position.kdl punctuation.definition.string.end.kdl
+          2:               invalid.illegal.muted.position.kdl punctuation.definition.string.end.kdl
+        pop               : 5
+      - include           : else-pop2
+
+  # pop_pre␠:
+  #   - match               : '(?={{u_sp}})'
+  #     pop                 : 1
+  # pop_pre-ch:
+  #   - match               : '(?=\{)'
+  #     pop                 : 1
+  # pop_pre-term:
+  #   - match               : '(?={{node_term_beg}})'
+  #     pop                 : 1
+  # pop_pre␤:
+  #   - match               : '(?={{nl_s}})'
+  #     pop                 : 1
+  ␤1:
+    - match               : '(?={{nl_s}})'
+      pop                 : 1
+  ␤2:
+    - match               : '(?={{nl_s}})'
+      pop                 : 2
+  ␤3:
+    - match               : '(?={{nl_s}})'
+      pop                 : 3
+  # pop_pre-node␠:
+  #   - match               : '(?={{node_sp_beg}})'
+  #     pop                 : 1
+  # pop_pre🆔¬:
+  #   - match               : '(?={{charID_not}})'
+  #     pop                 : 1
+  # pop_pre-ws:
+  #   - match               : '(?={{ws_beg}})'
+  #     pop                 : 1
+  # pop_pre-str:
+  #   - match               : '(?=\"|r\")'
+  #     pop                 :
+  # pop2_pre␠:
+  #   - match               : '(?={{u_sp}})'
+  #     pop                 : 2
+  # pop2_pre-ch:
+  #   - match               : '(?=\{)'
+  #     pop                 : 2
+  # pop2_pre-term:
+  #   - match               : '(?={{node_term_beg}})'
+  #     pop                 : 2
+  # pop3_pre-term:
+  #   - match               : '(?={{node_term_beg}})'
+  #     pop                 : 3
+  # pop2_pre␤:
+  #   - match               : '(?={{nl_s}})'
+  #     pop                 : 2
+  # pop2_pre-node␠:
+  #   - match               : '(?={{node_sp_beg}})'
+  #     pop                 : 2
+  # pop2_pre-str:
+  #   - match               : '(?=\"|r\")'
+  #     pop                 : 2
+  # pop2_pre🆔¬:
+  #   - match               : '(?={{charID_not}})'
+  #     pop                 : 2
+  # pop2_pre-ws:
+  #   - match               : '(?={{ws_beg}})'
+  #     pop                 : 2
+  # pop3_pre-str:
+  #   - match               : '(?=\"|r\")'
+  #     pop                 : 3
+  # pop_pre）:
+  #   - match               : (?=\))
+  #     pop                 : 1
+  # pop2_pre）:
+  #   - match               : (?=\))
+  #     pop                 : 2
+
+  # else-pop:               # pop_pre-non_ws
+  #   - match               : '(?=\S)'
+  #     pop                 : 1
+  # else-pop2:
+  #   - match               : '(?=\S)'
+  #     pop                 : 2
+  # else-pop3:
+  #   - match               : '(?=\S)'
+  #     pop                 : 3
+  # pop:
+  #   - match               : ''
+  #     pop                 : 1
+  # pop2:
+  #   - match               : ''
+  #     pop                 : 2
+  # pop3:
+  #   - match               : ''
+  #     pop                 : 3
+  # pop4:
+  #   - match               : ''
+  #     pop                 : 4
+  # pop5:
+  #   - match               : ''
+  #     pop                 : 5
+  pop_preS⸙:
+    - include             : else-pop
+  # pop⸙:
+  #   - include             : pop
+  # pop2⸙:
+  #   - include             : pop2
+  # pop3⸙:
+  #   - include             : pop3
