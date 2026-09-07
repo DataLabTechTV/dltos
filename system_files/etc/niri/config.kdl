@@ -84,14 +84,8 @@ layer-rule {
 }
 
 layer-rule {
-    match namespace="^noctalia-(|launcher-overlay|dock)-.*$"
-    opacity 0.85
-    background-effect { blur true; }
-}
-
-layer-rule {
-    match namespace="^noctalia-overview*"
-    place-within-backdrop true
+  match namespace="^noctalia-backdrop"
+  place-within-backdrop true
 }
 
 
