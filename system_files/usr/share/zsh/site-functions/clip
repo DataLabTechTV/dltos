@@ -1,0 +1,36 @@
+function clip() {
+    if ! command -v ffmpeg &>/dev/null; then
+        echo "clip: ffmpeg command not found"
+        return 1
+    fi
+
+    if [ "$#" -lt 4 ]; then
+        local prog="${0##*/}"
+        echo "Usage: $prog INPUT OUTPUT START END"
+        echo
+        echo "Arguments:"
+        echo "  INPUT   source video filename"
+        echo "  OUTPUT  target video filename"
+        echo "  START   clip start time, HH:MM:SS[.SSS]"
+        echo "  END     clip end time, HH:MM:SS[.SSS]"
+        return 2
+    fi
+
+    input="$1"
+    output="$2"
+    start="$3"
+    end="$4"
+
+    echo "$input"
+    echo "$output"
+    echo "$start"
+    echo "$end"
+
+    ffmpeg \
+        -i "$input" \
+        -ss "$start" \
+        -to "$end" \
+        -c:v "libx264" \
+        -c:a "aac" \
+        "$output"
+}
