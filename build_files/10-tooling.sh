@@ -13,18 +13,6 @@ ENV_DIR="$(dirname "${BASH_SOURCE[0]}")"
 # shellcheck source=/dev/null
 . "$ENV_DIR/uv-env.sh"
 
-setup_extra_repos() {
-    rpm --import \
-        "/usr/share/distribution-gpg-keys/rpmfusion/RPM-GPG-KEY-rpmfusion-free-fedora-$(rpm -E %fedora)" \
-        "/usr/share/distribution-gpg-keys/rpmfusion/RPM-GPG-KEY-rpmfusion-nonfree-fedora-$(rpm -E %fedora)"
-
-    dnf5 -y --setopt=localpkg_gpgcheck=1 install \
-        "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" \
-        "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm"
-
-    dnf5 config-manager disable 'rpmfusion-*'
-}
-
 install_language_tools() {
     dnf5 -y install cmake golang delve gopls golangci-lint cargo uv \
         python3-devel nodejs-npm tidy shfmt ShellCheck
@@ -32,8 +20,7 @@ install_language_tools() {
 }
 
 install_fonts() {
-    # dnf5 -y --enable-repo=terra install cascadiacode-nerd-fonts cascadiamono-nerd-fonts
-    return 0
+    dnf5 -y --enable-repo=terra install fantasquesansmono-nerd-fonts
 }
 
 install_shell_tools() {
@@ -50,7 +37,7 @@ install_shell_tools() {
 
     dnf5 -y install chezmoi direnv keychain zoxide bat ripgrep fd-find eza \
         ncdu age strace btop nvtop tldr trash-cli perl-Image-ExifTool
-    # dnf5 -y --enable-repo=terra install yazi
+    dnf5 -y --enable-repo=terra install yazi
     go install github.com/pranshuparmar/witr/cmd/witr@latest
 }
 
@@ -68,8 +55,8 @@ install_mail_tools() {
 
 install_graphics_tools() {
     dnf5 -y install ImageMagick ImageMagick-heic libheif libde265 chafa
-    # uv python install 3.13.12
-    # uv tool install --python 3.13.12 rembg[gpu,cli]
+    uv python install 3.13.12
+    uv tool install --python 3.13.12 rembg[gpu,cli]
 }
 
 install_doc_tools() {
@@ -94,7 +81,7 @@ install_dev_tools() {
     dnf5 -y swap vim-enhanced neovim
     alternatives --install /usr/bin/vim vim /usr/bin/nvim 100
 
-    # dnf5 -y --enable-repo=terra install zed
+    dnf5 -y --enable-repo=terra install zed
     dnf5 -y install emacs-pgtk libvterm-devel libtool
 
     dnf5 -y install pre-commit cloc git-delta ansible opentofu
@@ -124,7 +111,6 @@ install_backup_tools() {
     dnf5 -y install borgbackup
 }
 
-setup_extra_repos
 install_language_tools
 install_fonts
 install_shell_tools
