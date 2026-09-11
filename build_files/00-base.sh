@@ -2,8 +2,6 @@
 
 set -euxo pipefail
 
-# dnf5 versionlock add 'qt6-*' 'plasma-*'
-
 dnf5 -y remove fw-fanctrl
 dnf5 -y install zsh
 dnf5 -y install kitty
