@@ -15,7 +15,7 @@ ENV_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
 install_language_tools() {
     dnf5 -y install cmake golang delve gopls golangci-lint cargo uv \
-        python3-devel nodejs-npm tidy shfmt ShellCheck
+        python3-devel python3-pytest nodejs-npm tidy shfmt ShellCheck
     cargo install just-lsp
 }
 
@@ -36,16 +36,14 @@ install_shell_tools() {
     dnf5 -y copr disable atim/starship
 
     dnf5 -y install chezmoi direnv keychain zoxide bat ripgrep fd-find eza \
-        ncdu age strace btop nvtop tldr trash-cli perl-Image-ExifTool
+        ncdu age strace btop nvtop trash-cli perl-Image-ExifTool
     dnf5 -y --enable-repo=terra install yazi
     go install github.com/pranshuparmar/witr/cmd/witr@latest
 }
 
 install_network_tools() {
     dnf5 -y install iperf3 mkcert nc nmap ipcalc prettyping rclone
-    go install github.com/minio/mc@latest
     go install github.com/peak/s5cmd/v2@master
-    go install github.com/minio/warp@latest
     uv tool install --with=httpie-aws-authv4 httpie
 }
 
@@ -62,7 +60,7 @@ install_graphics_tools() {
 install_doc_tools() {
     dnf5 -y install pandoc texlive-scheme-basic texlive-collection-latexextra \
         texlive-collection-fontsrecommended texlive-collection-langportuguese \
-        texlive-dvipng git-filter-repo
+        texlive-dvipng
 }
 
 install_container_tools() {
@@ -81,29 +79,24 @@ install_dev_tools() {
     dnf5 -y swap vim-enhanced neovim
     alternatives --install /usr/bin/vim vim /usr/bin/nvim 100
 
-    dnf5 -y --enable-repo=terra install zed
     dnf5 -y install emacs-pgtk libvterm-devel libtool
-
-    dnf5 -y install pre-commit cloc git-delta ansible opentofu
+    dnf5 -y install pre-commit cloc git-delta git-filter-repo ansible opentofu
 
     go install github.com/gohugoio/hugo@v0.111.3
 }
 
 install_ai_tools() {
     uv tool install ramalama
-
-    clampdown_url='https://github.com/89luca89/clampdown/releases/download/v0.1/clampdown-linux-amd64'
-    clampdown_bin='/usr/bin/clampdown'
-    curl -fL $clampdown_url -o $clampdown_bin && chmod +x $clampdown_bin
 }
 
 install_data_tools() {
     dnf5 -y install jq yq sqlite3 miller gnuplot parallel xxd xmlstarlet
     uv tool install termgraph
     uv tool install visidata
+    uv tool install csvkit
     go install github.com/IllumiKnowLabs/labstore/cmd/labstore@v0.1.0
 
-    curl -L https://install.duckdb.org/v1.5.0/duckdb_cli-linux-amd64.zip | funzip >/usr/bin/duckdb
+    curl -L https://install.duckdb.org/v1.5.5/duckdb_cli-linux-amd64.zip | funzip >/usr/bin/duckdb
     chmod +x /usr/bin/duckdb
 }
 

@@ -1,5 +1,5 @@
-FROM docker.io/library/golang:1.26.2-trixie AS go_builder
-RUN go install github.com/probeldev/niri-float-sticky@v0.0.8
+FROM docker.io/library/golang:1.27.1-trixie AS go_builder
+RUN go install github.com/probeldev/niri-float-sticky@v0.0.9
 
 
 FROM docker.io/library/alpine:3.23.4 AS zsh_configs
@@ -12,8 +12,6 @@ RUN zsh /antidote/antidote bundle < /tmp/zsh_plugins.txt > ${ANTIDOTE_HOME}/plug
 
 
 FROM ghcr.io/ublue-os/bazzite-nvidia-open:stable
-# FROM ghcr.io/ublue-os/bazzite-nvidia-open:stable-44.20260825
-# FROM ghcr.io/ublue-os/bazzite-nvidia-open:testing-44.20260904@sha256:47357a1b70537e81b6d1a7af0e708d39b636abbcc179bb4d8c383ea459f97bf6
 
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/cache/libdnf5 \
