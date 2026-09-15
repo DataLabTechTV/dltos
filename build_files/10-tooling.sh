@@ -90,7 +90,7 @@ install_ai_tools() {
 }
 
 install_data_tools() {
-    dnf5 -y install jq yq sqlite3 miller gnuplot parallel xxd xmlstarlet
+    dnf5 -y install jq yq sqlite3 postgresql miller gnuplot parallel xxd xmlstarlet
     uv tool install termgraph
     uv tool install visidata
     uv tool install csvkit
