@@ -14,6 +14,8 @@
 
       delete-by-moving-to-trash t
 
+      flycheck-global-modes '(not org-mode)
+
       +evil-want-o/O-to-continue-comments nil
       +default-want-RET-continue-comments nil)
 
@@ -22,6 +24,13 @@
 
 (set-frame-parameter nil 'alpha-background 85)
 (add-to-list 'default-frame-alist '(alpha-background . 85))
+
+(add-to-list 'auto-mode-alist '("/ansible/.*\\ya?ml\\'" . ansible-mode))
+(add-to-list 'auto-mode-alist '("\\.just\\'" . just-mode))
+
+(add-to-list
+ 'auto-mode-alist
+ '("\\.\\(container\\|volume\\|network\\|image\\|build\\|pod\\|kube\\|artifact\\)\\'" . systemd-mode))
 
 
 ;; Keybindings
@@ -141,10 +150,7 @@
         org-use-sub-superscripts "{}"
         org-hide-emphasis-markers t
         org-ellipsis " ▾ "
-
-        org-agenda-files
-        (list
-         (expand-file-name "admin/todo.org" org-directory))
+        org-enforce-todo-dependencies nil
 
         org-startup-indented t
         org-startup-with-inline-images nil
@@ -159,8 +165,6 @@
         org-appear-autokeywords t
         org-appear-trigger 'manual
 
-        org-re-reveal-margin "0.15"
-
         org-latex-compiler "lualatex"
         org-preview-latex-default-process 'lualatex
 
@@ -173,8 +177,15 @@
         org-re-reveal-theme "serif"
         org-re-reveal-width 1024
         org-re-reveal-height 768
+        org-re-reveal-margin "0.15"
         org-re-reveal-single-file t
         org-re-reveal-subtree-with-title-slide nil
+
+        org-agenda-files
+        (list
+         (expand-file-name "admin/todo.org" org-directory))
+
+        org-agenda-todo-list-sublevels nil
 
         org-capture-templates
         `(("t", "To Do" entry
@@ -233,7 +244,9 @@
     '(org-level-5 :inherit outline-3 :height 1.0)
     '(org-level-6 :inherit outline-3 :height 1.0)
     '(org-level-7 :inherit outline-3 :height 1.0)
-    '(org-level-8 :inherit outline-3 :height 1.0))
+    '(org-level-8 :inherit outline-3 :height 1.0)
+    '(org-hide :foreground "unspecified-fg" :background "unspecified-bg")
+    '(org-quote :inherit font-lock-string-face))
 
   (add-to-list 'org-latex-packages-alist '("" "amsmath" t))
   (add-to-list 'org-latex-packages-alist '("" "amssymb" t))
@@ -256,6 +269,13 @@
    #'org-appear-mode
    #'dlt/org-appear-setup))
 
+;; (after! org-superstar
+;;   (setq org-indent-mode-turns-on-hiding-stars nil
+;;         org-superstar-remove-leading-stars t
+;;         org-hide-leading-stars nil
+;;         org-superstar-leading-bullet ?\s
+;;         org-superstar-leading-fallback ?\s))
+
 (after! ox
   (defvar +org-export-dir (expand-file-name "~/Desktop/org-export/"))
 
@@ -271,13 +291,21 @@
   (add-to-list 'org-latex-classes
                '("article"
                  "\\documentclass{article}
-\\usepackage[left=1.5cm,right=1.5cm,top=1.5cm,bottom=3cm]{geometry}
+%\\usepackage[left=1.5cm,right=1.5cm,top=1.5cm,bottom=3cm]{geometry}
+\\usepackage{parskip}
+\\usepackage[colorlinks=true]{hyperref}
 \\usepackage{fontspec}
 \\directlua{luaotfload.add_fallback(\"emoji\", {\"Noto Emoji:mode=harf\"})}
 \\setmainfont{Latin Modern Roman}[RawFeature={fallback=emoji}]"
                  ("\\section{%s}" . "\\section*{%s}")
                  ("\\subsection{%s}" . "\\subsection*{%s}")
                  ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))))
+
+(after! doc-view
+  (setq doc-view-continuous t))
+
+(after! ansible
+  (add-hook! 'ansible-mode-hook #'display-line-numbers-mode))
 
 (after! epa
   (setq epa-file-encrypt-to '("your.email@example.com"))
@@ -289,9 +317,6 @@
                  (not (file-exists-p (buffer-file-name))))
         (sh-set-shell "bash")))
   (add-hook 'sh-mode-hook #'dlt/sh-mode-bash))
-
-(after! just-mode
-  (add-to-list 'auto-mode-alist '("\\.just\\'" . just-mode)))
 
 (after! treemacs
   (define-key treemacs-mode-map [mouse-1] #'treemacs-single-click-expand-action))
