@@ -53,7 +53,7 @@ install_mail_tools() {
 
 install_graphics_tools() {
     dnf5 -y install ImageMagick ImageMagick-heic chafa
-    dnf5 -y --enable-repo=fedora-multimedia libheif libde265
+    dnf5 -y --enable-repo=fedora-multimedia install libheif libde265
     uv python install 3.13.12
     uv tool install --python 3.13.12 rembg[gpu,cli]
 }
