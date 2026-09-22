@@ -1,0 +1,5 @@
+[Automount]
+Where=/var/mnt/nfs
+
+[Install]
+WantedBy=multi-user.target

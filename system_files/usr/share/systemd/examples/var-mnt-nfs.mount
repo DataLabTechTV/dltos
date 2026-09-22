@@ -1,0 +1,13 @@
+[Unit]
+Description=Mount NFS share
+After=network-online.target
+Wants=network-online.target
+
+[Mount]
+What=host.lan:/nfs
+Where=/var/mnt/nfs
+Type=nfs
+Options=vers=4,x-gvfs-name=nfs,_netdev
+
+[Install]
+WantedBy=multi-user.target

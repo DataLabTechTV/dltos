@@ -1,0 +1,14 @@
+[Unit]
+Description=Mount SMB share
+After=network-online.target
+Wants=network-online.target
+
+[Mount]
+What=//host.lan/smb
+Where=/var/mnt/smb
+Type=cifs
+LoadCredentialEncrypted=smb.cred:/etc/credstore.encrypted/smb.cred
+Options=credentials=%d/smb.cred,iocharset=utf8,vers=3.1.1,uid=1000,gid=1000,x-gvfs-name=smb,_netdev
+
+[Install]
+WantedBy=multi-user.target
