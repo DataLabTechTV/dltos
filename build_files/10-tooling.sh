@@ -80,7 +80,7 @@ install_dev_tools() {
     dnf5 -y swap vim-enhanced neovim
     alternatives --install /usr/bin/vim vim /usr/bin/nvim 100
 
-    dnf5 -y install emacs-pgtk libvterm-devel libtool
+    dnf5 -y install emacs-pgtk libvterm-devel libtool python3-hvac
     dnf5 -y install pre-commit cloc git-delta git-filter-repo ansible opentofu
 
     go install github.com/gohugoio/hugo@v0.111.3
