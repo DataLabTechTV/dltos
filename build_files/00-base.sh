@@ -6,7 +6,7 @@ dnf5 -y remove fw-fanctrl
 dnf5 -y install zsh
 dnf5 -y install kitty
 
-dnf5 -y remove xwaylandvideobridge
+dnf5 -y remove xwaylandvideobridge msedit
 
 # Temporary fix, until 0.8.3 is released
 dnf5 -y install xwayland-satellite-0.8.1-1.fc44
