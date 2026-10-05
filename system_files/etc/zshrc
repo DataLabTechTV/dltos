@@ -55,4 +55,4 @@ for rc in /etc/zshrc.d/*.zsh; do
     source "$rc"
 done
 
-autoload -Uz ls man
+autoload -Uz ls man clip
