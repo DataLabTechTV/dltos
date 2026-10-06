@@ -23,7 +23,7 @@ concurrency:
 jobs:
   build_push:
     name: Build and push image
-    runs-on: ubuntu-latest
+    runs-on: rockylinux-10
 
     # permissions:
     #   contents: read
