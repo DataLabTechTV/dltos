@@ -5,4 +5,3 @@ export UV_PYTHON_INSTALL_DIR=/usr/share/uv/python
 export UV_TOOL_DIR=/usr/share/uv/tools
 export UV_TOOL_BIN_DIR=/usr/bin
 export UV_LINK_MODE=copy
-export UV_SYSTEM_CERTS=true
