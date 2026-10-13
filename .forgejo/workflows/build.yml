@@ -109,18 +109,26 @@ jobs:
       # These `if` statements are so that pull requests for your custom images do not make it publish any packages under your name without you knowing
       # They also check if the runner is on the default branch so that things like the merge queue (if you enable it), are going to work
       - name: Login to Forgejo Container Registry
+        uses: docker/login-action@abd2ef45e78c5afb21d64d4ca52ee8550d9572c7 # v4.5.1
         if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
-        env:
-          REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
-        run: |
-          set -eu
-          authfile="${RUNNER_TEMP}/registry-auth.json"
-          printf '%s' "${REGISTRY_TOKEN}" |
-            podman login git.lab.lan \
-              --authfile "${authfile}" \
-              --username "${{ github.actor }}" \
-              --password-stdin
-          echo "REGISTRY_AUTH_FILE=${authfile}" >> "$GITHUB_ENV"
+        with:
+          registry: git.lab.lan
+          username: ${{ github.actor }}
+          password: ${{ secrets.FORGEJO_TOKEN }}
+
+      # - name: Login to Forgejo Container Registry
+      #   if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+      #   env:
+      #     REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
+      #   run: |
+      #     set -eu
+      #     authfile="${RUNNER_TEMP}/registry-auth.json"
+      #     printf '%s' "${REGISTRY_TOKEN}" |
+      #       podman login git.lab.lan \
+      #         --authfile "${authfile}" \
+      #         --username "${{ github.actor }}" \
+      #         --password-stdin
+      #     echo "REGISTRY_AUTH_FILE=${authfile}" >> "$GITHUB_ENV"
 
       - name: Push to Forgejo Container Registry
         if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
