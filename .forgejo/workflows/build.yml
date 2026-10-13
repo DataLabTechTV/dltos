@@ -111,7 +111,7 @@ jobs:
       - name: Login to Forgejo Container Registry
         if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
         env:
-          REGISTRY_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+          REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
         run: |
           set -eu
           authfile="${RUNNER_TEMP}/registry-auth.json"
@@ -126,7 +126,6 @@ jobs:
         if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
         id: push-image
         env:
-          REGISTRY_AUTH_FILE: ${{ env.REGISTRY_AUTH_FILE }}
           ALIAS_TAGS: ${{ steps.gen-build-tags.outputs.alias_tags }}
         run: |
           set -euox pipefail
