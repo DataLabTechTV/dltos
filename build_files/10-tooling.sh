@@ -65,7 +65,7 @@ install_doc_tools() {
 }
 
 install_container_tools() {
-    dnf5 -y install docker-cli docker-compose-switch oci-seccomp-bpf-hook cosign
+    dnf5 -y install docker-cli docker-compose-switch oci-seccomp-bpf-hook cosign image-builder
     mv /usr/bin/docker /usr/bin/docker.real
     mv /usr/bin/docker-compose /usr/bin/docker-compose.real
 
