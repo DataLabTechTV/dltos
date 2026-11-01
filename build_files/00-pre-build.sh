@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euxo pipefail
+
 if [ "$USE_ARTIFACT_KEEPER" = "true" ]; then
     echo "Using Artifact Keeper RPM repos"
 

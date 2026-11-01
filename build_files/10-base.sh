@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 set -euxo pipefail
 
 dnf5 -y remove fw-fanctrl

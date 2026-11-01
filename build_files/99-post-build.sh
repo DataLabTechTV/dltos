@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euxo pipefail
+
 if [ "$USE_ARTIFACT_KEEPER" = "true" ]; then
     echo "Cleaning up Artifact Keeper RPM repos"
 
