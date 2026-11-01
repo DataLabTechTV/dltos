@@ -2,9 +2,6 @@
 
 set -euxo pipefail
 
-dnf5 clean all
-dnf5 makecache --refresh
-
 dnf5 config-manager setopt keepcache=1
 
 if [ "$USE_ARTIFACT_KEEPER" = "true" ]; then
