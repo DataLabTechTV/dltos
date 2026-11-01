@@ -2,16 +2,16 @@
 
 set -euxo pipefail
 
-ENV_DIR="$(dirname "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd)"
 
 # shellcheck source=/dev/null
-. "$ENV_DIR/go-env.sh"
+. "$SCRIPT_DIR/go-env.sh"
 
 # shellcheck source=/dev/null
-. "$ENV_DIR/cargo-env.sh"
+. "$SCRIPT_DIR/cargo-env.sh"
 
 # shellcheck source=/dev/null
-. "$ENV_DIR/uv-env.sh"
+. "$SCRIPT_DIR/uv-env.sh"
 
 install_language_tools() {
     dnf5 -y install cmake golang delve gopls golangci-lint cargo uv \

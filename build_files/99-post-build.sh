@@ -13,9 +13,6 @@ if [ "$USE_ARTIFACT_KEEPER" = "true" ]; then
         artifact-keeper-fedora-multimedia artifact-keeper-terra
 
     rm -f /etc/yum.repos.d/artifact-keeper.repo
-
-    # Disable Artifact Keeper repos for language packages
-    unset PIP_INDEX_URL GOPROXY GONOSUMCHECK CARGO_REGISTRIES_ARTIFACT_KEEPER_INDEX CARGO_REGISTRY_DEFAULT
 fi
 
 dnf5 config-manager unsetopt keepcache
