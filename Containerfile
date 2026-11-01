@@ -24,7 +24,7 @@ RUN --mount=type=cache,dst=/var/cache \
 COPY build_files/00-base.sh /tmp/00-base.sh
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/cache/libdnf5 \
-    /tmp/00-base.sh
+    USE_ARTIFACT_KEEPER="${USE_ARTIFACT_KEEPER}" /tmp/00-base.sh
 
 COPY build_files/10-tooling.sh /tmp/10-tooling.sh
 COPY build_files/go-env.sh /tmp/go-env.sh
@@ -61,6 +61,6 @@ RUN --mount=type=cache,dst=/var/cache \
 COPY build_files/90-cleanup.sh /tmp/90-cleanup.sh
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/cache/libdnf5 \
-    /tmp/90-cleanup.sh
+    USE_ARTIFACT_KEEPER="${USE_ARTIFACT_KEEPER}" /tmp/90-cleanup.sh
 
 RUN bootc container lint
