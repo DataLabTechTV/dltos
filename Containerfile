@@ -21,13 +21,13 @@ ARG USE_ARTIFACT_KEEPER
 
 RUN --mount=type=bind,source=build_files/00-pre-build.sh,target=/ctx/00-pre-build.sh \
     --mount=type=bind,source=build_files/artifact-keeper.repo,target=/ctx/artifact-keeper.repo \
-    --mount=type=cache,dst=/var/cache,sharing=locked \
+    --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     --mount=type=cache,dst=/var/log \
     --mount=type=tmpfs,dst=/tmp \
     USE_ARTIFACT_KEEPER="${USE_ARTIFACT_KEEPER}" /ctx/00-pre-build.sh
 
 RUN --mount=type=bind,source=build_files/10-base.sh,target=/ctx/10-base.sh \
-    --mount=type=cache,dst=/var/cache,sharing=locked \
+    --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     --mount=type=cache,dst=/var/log \
     --mount=type=tmpfs,dst=/tmp \
     /ctx/10-base.sh
@@ -36,7 +36,7 @@ RUN --mount=type=bind,source=build_files/20-tooling.sh,target=/ctx/20-tooling.sh
     --mount=type=bind,source=build_files/go-env.sh,target=/ctx/go-env.sh \
     --mount=type=bind,source=build_files/cargo-env.sh,target=/ctx/cargo-env.sh \
     --mount=type=bind,source=build_files/uv-env.sh,target=/ctx/uv-env.sh \
-    --mount=type=cache,dst=/var/cache,sharing=locked \
+    --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     --mount=type=cache,dst=/var/log \
     --mount=type=tmpfs,dst=/tmp \
     /ctx/20-tooling.sh
@@ -46,31 +46,31 @@ COPY --from=zsh_configs /usr/share/zsh/antidote /usr/share/zsh/antidote
 COPY system_files /
 
 RUN --mount=type=bind,source=build_files/30-services.sh,target=/ctx/30-services.sh \
-    --mount=type=cache,dst=/var/cache,sharing=locked \
+    --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     --mount=type=cache,dst=/var/log \
     --mount=type=tmpfs,dst=/tmp \
     /ctx/30-services.sh
 
 RUN --mount=type=bind,source=build_files/40-cosmetics.sh,target=/ctx/40-cosmetics.sh \
-    --mount=type=cache,dst=/var/cache,sharing=locked \
+    --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     --mount=type=cache,dst=/var/log \
     --mount=type=tmpfs,dst=/tmp \
     /ctx/40-cosmetics.sh
 
 RUN --mount=type=bind,source=build_files/50-initramfs.sh,target=/ctx/50-initramfs.sh \
-    --mount=type=cache,dst=/var/cache,sharing=locked \
+    --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     --mount=type=cache,dst=/var/log \
     --mount=type=tmpfs,dst=/tmp \
     /ctx/50-initramfs.sh
 
 RUN --mount=type=bind,source=build_files/60-validations.sh,target=/ctx/60-validations.sh \
-    --mount=type=cache,dst=/var/cache,sharing=locked \
+    --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     --mount=type=cache,dst=/var/log \
     --mount=type=tmpfs,dst=/tmp \
     /ctx/60-validations.sh
 
 RUN --mount=type=bind,source=build_files/99-post-build.sh,target=/ctx/99-post-build.sh \
-    --mount=type=cache,dst=/var/cache,sharing=locked \
+    --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     --mount=type=cache,dst=/var/log \
     --mount=type=tmpfs,dst=/tmp \
     USE_ARTIFACT_KEEPER="${USE_ARTIFACT_KEEPER}" /ctx/99-post-build.sh
