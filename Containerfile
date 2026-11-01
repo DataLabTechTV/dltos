@@ -14,6 +14,7 @@ RUN zsh /antidote/antidote bundle < /tmp/zsh_plugins.txt > ${ANTIDOTE_HOME}/plug
 
 
 FROM ghcr.io/ublue-os/bazzite-nvidia-open:stable
+ARG USE_ARTIFACT_KEEPER
 
 COPY system_files/etc/yum.repos.d/artifact-keeper.repo /etc/yum.repos.d/artifact-keeper.repo
 
