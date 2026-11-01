@@ -1,3 +1,5 @@
+ARG USE_ARTIFACT_KEEPER=false
+
 FROM docker.io/library/golang:1.27.1-trixie AS go_builder
 RUN go install github.com/probeldev/niri-float-sticky@v0.0.9
 
