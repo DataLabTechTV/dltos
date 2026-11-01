@@ -22,46 +22,51 @@ RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/cache/libdnf5 \
  dnf5 config-manager setopt keepcache=1
 
-COPY build_files/00-base.sh /tmp/00-base.sh
+COPY build_files/00-pre-build.sh /tmp/00-pre-build.sh
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/cache/libdnf5 \
-    USE_ARTIFACT_KEEPER="${USE_ARTIFACT_KEEPER}" /tmp/00-base.sh
+    USE_ARTIFACT_KEEPER="${USE_ARTIFACT_KEEPER}" /tmp/00-pre-build.sh
 
-COPY build_files/10-tooling.sh /tmp/10-tooling.sh
+COPY build_files/10-base.sh /tmp/10-base.sh
+RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/cache/libdnf5 \
+    /tmp/10-base.sh
+
+COPY build_files/20-tooling.sh /tmp/20-tooling.sh
 COPY build_files/go-env.sh /tmp/go-env.sh
 COPY build_files/cargo-env.sh /tmp/cargo-env.sh
 COPY build_files/uv-env.sh /tmp/uv-env.sh
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/cache/libdnf5 \
-    /tmp/10-tooling.sh
+    /tmp/20-tooling.sh
 
 COPY --from=go_builder /go/bin/niri-float-sticky /usr/bin/niri-float-sticky
 COPY --from=zsh_configs /usr/share/zsh/antidote /usr/share/zsh/antidote
 COPY system_files /
 
-COPY build_files/20-services.sh /tmp/20-services.sh
+COPY build_files/30-services.sh /tmp/30-services.sh
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/cache/libdnf5 \
-    /tmp/20-services.sh
+    /tmp/30-services.sh
 
-COPY build_files/30-cosmetics.sh /tmp/30-cosmetics.sh
+COPY build_files/40-cosmetics.sh /tmp/40-cosmetics.sh
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/cache/libdnf5 \
-    /tmp/30-cosmetics.sh
+    /tmp/40-cosmetics.sh
 
-COPY build_files/40-initramfs.sh /tmp/40-initramfs.sh
+COPY build_files/50-initramfs.sh /tmp/50-initramfs.sh
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/cache/libdnf5 \
-    /tmp/40-initramfs.sh
+    /tmp/50-initramfs.sh
 
-COPY build_files/50-validations.sh /tmp/50-validations.sh
+COPY build_files/60-validations.sh /tmp/60-validations.sh
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/cache/libdnf5 \
-    /tmp/50-validations.sh
+    /tmp/60-validations.sh
 
-COPY build_files/90-cleanup.sh /tmp/90-cleanup.sh
+COPY build_files/99-post-build.sh /tmp/99-post-build.sh
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/cache/libdnf5 \
-    USE_ARTIFACT_KEEPER="${USE_ARTIFACT_KEEPER}" /tmp/90-cleanup.sh
+    USE_ARTIFACT_KEEPER="${USE_ARTIFACT_KEEPER}" /tmp/99-post-build.sh
 
 RUN bootc container lint

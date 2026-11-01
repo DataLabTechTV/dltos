@@ -1,16 +1,6 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 
-if [ "$USE_ARTIFACT_KEEPER" = "true" ]; then
-    echo "Using Artifact Keeper RPM repos"
-
-    # Disable default repos in favor of Artifact Keeper's
-    dnf config-manager disable fedora updates fedora-multimedia terra
-    dnf config-manager enable \
-        artifact-keeper-fedora artifact-keeper-fedora-updates \
-        artifact-keeper-fedora-multimedia artifact-keeper-terra
-fi
-
 dnf5 -y remove fw-fanctrl
 dnf5 -y install zsh
 dnf5 -y install kitty
