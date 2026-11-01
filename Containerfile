@@ -1,7 +1,10 @@
 ARG USE_ARTIFACT_KEEPER=false
 
 FROM docker.io/library/golang:1.27.1-trixie AS go_builder
-RUN go install github.com/probeldev/niri-float-sticky@v0.0.9
+ENV CGO_ENABLED=0
+RUN --mount=type=cache,dst=/go/pkg/mod \
+    --mount=type=cache,dst=/root/.cache/go-build \
+    go install -trimpath -ldflags='-s -w' github.com/probeldev/niri-float-sticky@v0.0.9
 
 
 FROM docker.io/library/alpine:3.23.4 AS zsh_configs
@@ -16,57 +19,60 @@ RUN zsh /antidote/antidote bundle < /tmp/zsh_plugins.txt > ${ANTIDOTE_HOME}/plug
 FROM ghcr.io/ublue-os/bazzite-nvidia-open:stable
 ARG USE_ARTIFACT_KEEPER
 
-COPY system_files/etc/yum.repos.d/artifact-keeper.repo /etc/yum.repos.d/artifact-keeper.repo
+RUN --mount=type=bind,source=build_files/00-pre-build.sh,target=/ctx/00-pre-build.sh \
+    --mount=type=bind,source=build_files/artifact-keeper.repo,target=/ctx/artifact-keeper.repo \
+    --mount=type=cache,dst=/var/cache,sharing=locked \
+    --mount=type=cache,dst=/var/log \
+    --mount=type=tmpfs,dst=/tmp \
+    USE_ARTIFACT_KEEPER="${USE_ARTIFACT_KEEPER}" /ctx/00-pre-build.sh
 
-RUN --mount=type=cache,dst=/var/cache \
-    --mount=type=cache,dst=/var/cache/libdnf5 \
- dnf5 config-manager setopt keepcache=1
+RUN --mount=type=bind,source=build_files/10-base.sh,target=/ctx/10-base.sh \
+    --mount=type=cache,dst=/var/cache,sharing=locked \
+    --mount=type=cache,dst=/var/log \
+    --mount=type=tmpfs,dst=/tmp \
+    /ctx/10-base.sh
 
-COPY build_files/00-pre-build.sh /tmp/00-pre-build.sh
-RUN --mount=type=cache,dst=/var/cache \
-    --mount=type=cache,dst=/var/cache/libdnf5 \
-    USE_ARTIFACT_KEEPER="${USE_ARTIFACT_KEEPER}" /tmp/00-pre-build.sh
-
-COPY build_files/10-base.sh /tmp/10-base.sh
-RUN --mount=type=cache,dst=/var/cache \
-    --mount=type=cache,dst=/var/cache/libdnf5 \
-    /tmp/10-base.sh
-
-COPY build_files/20-tooling.sh /tmp/20-tooling.sh
-COPY build_files/go-env.sh /tmp/go-env.sh
-COPY build_files/cargo-env.sh /tmp/cargo-env.sh
-COPY build_files/uv-env.sh /tmp/uv-env.sh
-RUN --mount=type=cache,dst=/var/cache \
-    --mount=type=cache,dst=/var/cache/libdnf5 \
-    /tmp/20-tooling.sh
+RUN --mount=type=bind,source=build_files/20-tooling.sh,target=/ctx/20-tooling.sh \
+    --mount=type=bind,source=build_files/go-env.sh,target=/ctx/go-env.sh \
+    --mount=type=bind,source=build_files/cargo-env.sh,target=/ctx/cargo-env.sh \
+    --mount=type=bind,source=build_files/uv-env.sh,target=/ctx/uv-env.sh \
+    --mount=type=cache,dst=/var/cache,sharing=locked \
+    --mount=type=cache,dst=/var/log \
+    --mount=type=tmpfs,dst=/tmp \
+    /ctx/20-tooling.sh
 
 COPY --from=go_builder /go/bin/niri-float-sticky /usr/bin/niri-float-sticky
 COPY --from=zsh_configs /usr/share/zsh/antidote /usr/share/zsh/antidote
 COPY system_files /
 
-COPY build_files/30-services.sh /tmp/30-services.sh
-RUN --mount=type=cache,dst=/var/cache \
-    --mount=type=cache,dst=/var/cache/libdnf5 \
-    /tmp/30-services.sh
+RUN --mount=type=bind,source=build_files/30-services.sh,target=/ctx/30-services.sh \
+    --mount=type=cache,dst=/var/cache,sharing=locked \
+    --mount=type=cache,dst=/var/log \
+    --mount=type=tmpfs,dst=/tmp \
+    /ctx/30-services.sh
 
-COPY build_files/40-cosmetics.sh /tmp/40-cosmetics.sh
-RUN --mount=type=cache,dst=/var/cache \
-    --mount=type=cache,dst=/var/cache/libdnf5 \
-    /tmp/40-cosmetics.sh
+RUN --mount=type=bind,source=build_files/40-cosmetics.sh,target=/ctx/40-cosmetics.sh \
+    --mount=type=cache,dst=/var/cache,sharing=locked \
+    --mount=type=cache,dst=/var/log \
+    --mount=type=tmpfs,dst=/tmp \
+    /ctx/40-cosmetics.sh
 
-COPY build_files/50-initramfs.sh /tmp/50-initramfs.sh
-RUN --mount=type=cache,dst=/var/cache \
-    --mount=type=cache,dst=/var/cache/libdnf5 \
-    /tmp/50-initramfs.sh
+RUN --mount=type=bind,source=build_files/50-initramfs.sh,target=/ctx/50-initramfs.sh \
+    --mount=type=cache,dst=/var/cache,sharing=locked \
+    --mount=type=cache,dst=/var/log \
+    --mount=type=tmpfs,dst=/tmp \
+    /ctx/50-initramfs.sh
 
-COPY build_files/60-validations.sh /tmp/60-validations.sh
-RUN --mount=type=cache,dst=/var/cache \
-    --mount=type=cache,dst=/var/cache/libdnf5 \
-    /tmp/60-validations.sh
+RUN --mount=type=bind,source=build_files/60-validations.sh,target=/ctx/60-validations.sh \
+    --mount=type=cache,dst=/var/cache,sharing=locked \
+    --mount=type=cache,dst=/var/log \
+    --mount=type=tmpfs,dst=/tmp \
+    /ctx/60-validations.sh
 
-COPY build_files/99-post-build.sh /tmp/99-post-build.sh
-RUN --mount=type=cache,dst=/var/cache \
-    --mount=type=cache,dst=/var/cache/libdnf5 \
-    USE_ARTIFACT_KEEPER="${USE_ARTIFACT_KEEPER}" /tmp/99-post-build.sh
+RUN --mount=type=bind,source=build_files/99-post-build.sh,target=/ctx/99-post-build.sh \
+    --mount=type=cache,dst=/var/cache,sharing=locked \
+    --mount=type=cache,dst=/var/log \
+    --mount=type=tmpfs,dst=/tmp \
+    USE_ARTIFACT_KEEPER="${USE_ARTIFACT_KEEPER}" /ctx/99-post-build.sh
 
 RUN bootc container lint
