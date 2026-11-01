@@ -13,6 +13,8 @@ RUN zsh /antidote/antidote bundle < /tmp/zsh_plugins.txt > ${ANTIDOTE_HOME}/plug
 
 FROM ghcr.io/ublue-os/bazzite-nvidia-open:stable
 
+COPY system_files/etc/yum.repos.d/artifact-keeper.repo /etc/yum.repos.d/artifact-keeper.repo
+
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/cache/libdnf5 \
  dnf5 config-manager setopt keepcache=1
@@ -53,5 +55,10 @@ COPY build_files/50-validations.sh /tmp/50-validations.sh
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/cache/libdnf5 \
     /tmp/50-validations.sh
+
+COPY build_files/90-cleanup.sh /tmp/90-cleanup.sh
+RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/cache/libdnf5 \
+    /tmp/90-cleanup.sh
 
 RUN bootc container lint

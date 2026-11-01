@@ -65,7 +65,8 @@ jobs:
         run: |
           just build \
             ${IMAGE_NAME} \
-            ${DEFAULT_TAG}
+            ${DEFAULT_TAG} \
+            true
 
       # This is optional, this provides smaller delta updates
       - name: Rechunk with rpm-ostree

@@ -1,0 +1,27 @@
+[artifact-keeper-fedora]
+name=Fedora $releasever (Artifact Keeper)
+baseurl=https://artifacts.lab.lan/rpm/fedora-$releasever
+enabled=0
+gpgcheck=1
+repo_gpgcheck=0
+
+[artifact-keeper-fedora-updates]
+name=Fedora $releasever Updates (Artifact Keeper)
+baseurl=https://artifacts.lab.lan/rpm/fedora-$releasever-updates
+enabled=0
+gpgcheck=1
+repo_gpgcheck=0
+
+[artifact-keeper-fedora-multimedia]
+name=Fedora $releasever Multimedia (Artifact Keeper)
+baseurl=https://artifacts.lab.lan/rpm/fedora-$releasever-multimedia
+enabled=0
+gpgcheck=1
+repo_gpgcheck=0
+
+[artifact-keeper-terra]
+name=Terra $releasever (Artifact Keeper)
+baseurl=https://artifacts.lab.lan/rpm/terra-$releasever
+enabled=0
+gpgcheck=1
+repo_gpgcheck=0
