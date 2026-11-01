@@ -2,8 +2,7 @@
 
 set -euxo pipefail
 
-dnf5 clean metadata
-
+dnf5 config-manager setopt zchunk=False
 dnf5 config-manager setopt keepcache=1
 
 if [ "$USE_ARTIFACT_KEEPER" = "true" ]; then
