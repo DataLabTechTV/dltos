@@ -5,5 +5,5 @@ export CARGO_TARGET_DIR=/var/cache/cargo-target
 export CARGO_INSTALL_ROOT=/usr
 
 if [ "$USE_ARTIFACT_KEEPER" = "true" ]; then
-    install -m644 /ctx/cargo.config.toml "$CARGO_HOME/config.toml"
+    install -Dm644 /ctx/cargo.config.toml "$CARGO_HOME/config.toml"
 fi
