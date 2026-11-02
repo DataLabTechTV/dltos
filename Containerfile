@@ -8,8 +8,11 @@ RUN --mount=type=cache,dst=/go/pkg/mod \
 
 
 FROM docker.io/library/alpine:3.24 AS zsh_configs
+ARG USE_ARTIFACT_KEEPER
 
-RUN --mount=type=bind,source=build_files/alpine-apk-repositories,target=/etc/apk/repositories \
+RUN --mount=type=bind,source=build_files/alpine-apk-env.sh,target=/ctx/alpine-apk-env.sh \
+    --mount=type=bind,source=build_files/alpine-apk-repositories,target=/ctx/alpine-apk-repositories \
+    . /ctx/alpine-apk-env.sh; \
     apk add --no-cache zsh git
 
 RUN git clone --depth=1 https://github.com/mattmc3/antidote.git /antidote
