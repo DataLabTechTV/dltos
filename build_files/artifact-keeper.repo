@@ -12,6 +12,13 @@ enabled=0
 gpgcheck=1
 repo_gpgcheck=0
 
+[artifact-keeper-fedora-updates-archive]
+name=Fedora $releasever - $basearch - Updates Archive (Artifact Keeper)
+baseurl=https://artifacts.lab.lan/rpm/fedora-$releasever-updates-archive
+enabled=0
+gpgcheck=1
+repo_gpgcheck=0
+
 [artifact-keeper-fedora-multimedia]
 name=Fedora $releasever Multimedia (Artifact Keeper)
 baseurl=https://artifacts.lab.lan/rpm/fedora-$releasever-multimedia

@@ -15,5 +15,6 @@ if [ "$USE_ARTIFACT_KEEPER" = "true" ]; then
     dnf config-manager disable fedora updates fedora-multimedia terra
     dnf config-manager enable \
         artifact-keeper-fedora artifact-keeper-fedora-updates \
+        artifact-keeper-fedora-updates-archive \
         artifact-keeper-fedora-multimedia artifact-keeper-terra
 fi
