@@ -7,10 +7,15 @@ RUN --mount=type=cache,dst=/go/pkg/mod \
     go install -trimpath -ldflags='-s -w' github.com/probeldev/niri-float-sticky@v0.0.9
 
 
-FROM docker.io/library/alpine:3.23.4 AS zsh_configs
-ENV ANTIDOTE_HOME=/usr/share/zsh/antidote
-RUN apk add --no-cache zsh git
+FROM docker.io/library/alpine:3.24 AS zsh_configs
+
+RUN --mount=type=bind,source=build_files/alpine-apk-repositories,target=/etc/apk/repositories \
+    apk add --no-cache zsh git
+
 RUN git clone --depth=1 https://github.com/mattmc3/antidote.git /antidote
+
+ENV ANTIDOTE_HOME=/usr/share/zsh/antidote
+
 RUN mkdir -p ${ANTIDOTE_HOME}
 COPY build_files/zsh_plugins.txt /tmp/zsh_plugins.txt
 RUN zsh /antidote/antidote bundle < /tmp/zsh_plugins.txt > ${ANTIDOTE_HOME}/plugins.zsh
