@@ -2,6 +2,11 @@
 
 set -euxo pipefail
 
+SCRIPT_DIR="$(cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd)"
+
+# shellcheck source=/dev/null
+. "$SCRIPT_DIR/cargo-env.sh"
+
 if [ "$USE_ARTIFACT_KEEPER" = "true" ]; then
     echo "Cleaning up Artifact Keeper RPM repos"
 
@@ -13,6 +18,7 @@ if [ "$USE_ARTIFACT_KEEPER" = "true" ]; then
         artifact-keeper-fedora-multimedia artifact-keeper-terra
 
     rm -f /etc/yum.repos.d/artifact-keeper.repo
+    rm -f "$CARGO_HOME/config.toml"
 fi
 
 dnf5 config-manager unsetopt keepcache

@@ -36,6 +36,7 @@ RUN --mount=type=bind,source=build_files/20-tooling.sh,target=/ctx/20-tooling.sh
     --mount=type=bind,source=build_files/go-env.sh,target=/ctx/go-env.sh \
     --mount=type=bind,source=build_files/cargo-env.sh,target=/ctx/cargo-env.sh \
     --mount=type=bind,source=build_files/uv-env.sh,target=/ctx/uv-env.sh \
+    --mount=type=bind,source=build_files/cargo.config.toml,target=/ctx/cargo.config.toml \
     --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     --mount=type=cache,dst=/var/log \
     --mount=type=tmpfs,dst=/tmp \
@@ -70,6 +71,7 @@ RUN --mount=type=bind,source=build_files/60-validations.sh,target=/ctx/60-valida
     /ctx/60-validations.sh
 
 RUN --mount=type=bind,source=build_files/99-post-build.sh,target=/ctx/99-post-build.sh \
+    --mount=type=bind,source=build_files/cargo-env.sh,target=/ctx/cargo-env.sh \
     --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     --mount=type=cache,dst=/var/log \
     --mount=type=tmpfs,dst=/tmp \

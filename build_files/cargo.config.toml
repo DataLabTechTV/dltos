@@ -1,0 +1,2 @@
+[registries.cargo]
+index = "https://artifacts.lab.lan/cargo/cargo/index"
