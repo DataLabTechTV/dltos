@@ -12,7 +12,9 @@ if [ "$USE_ARTIFACT_KEEPER" = "true" ]; then
 
     install -m644 /ctx/artifact-keeper.repo /etc/yum.repos.d/
 
-    dnf config-manager disable fedora updates fedora-multimedia terra
+    dnf config-manager disable \
+        fedora updates updates-archive fedora-multimedia terra
+
     dnf config-manager enable \
         artifact-keeper-fedora artifact-keeper-fedora-updates \
         artifact-keeper-fedora-updates-archive \
