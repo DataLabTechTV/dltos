@@ -1,5 +1,5 @@
 [registries.artifact-keeper]
-index = "sparse+http://artifacts.lab.lan/cargo/cargo/index"
+index = "sparse+http://artifacts.lab.lan/cargo/cargo/index/"
 
 [registry]
 default = "artifact-keeper"
