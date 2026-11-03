@@ -80,6 +80,7 @@ RUN --mount=type=bind,source=build_files/60-validations.sh,target=/ctx/60-valida
 
 RUN --mount=type=bind,source=build_files/99-post-build.sh,target=/ctx/99-post-build.sh \
     --mount=type=bind,source=build_files/cargo-env.sh,target=/ctx/cargo-env.sh \
+    --mount=type=bind,source=build_files/cargo.config.toml,target=/ctx/cargo.config.toml \
     --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     --mount=type=cache,dst=/var/log \
     --mount=type=tmpfs,dst=/tmp \
