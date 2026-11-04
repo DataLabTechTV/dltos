@@ -15,8 +15,9 @@ SCRIPT_DIR="$(cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd)"
 
 install_language_tools() {
     dnf5 -y install cmake golang delve gopls golangci-lint cargo uv \
-        python3-devel python3-pytest nodejs-npm tidy shfmt ShellCheck
+        python3-devel python3-pytest nodejs-npm tidy ShellCheck
     cargo install just-lsp
+    go install mvdan.cc/sh/v3/cmd/shfmt@latest
 }
 
 install_fonts() {
