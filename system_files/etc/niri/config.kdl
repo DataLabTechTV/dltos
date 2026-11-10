@@ -435,8 +435,8 @@ binds {
     Mod+Ctrl+Page_Up { move-workspace-up; }
     Mod+Ctrl+U { move-workspace-down; }
     Mod+Ctrl+I { move-workspace-up; }
-    Mod+Ctrl+WheelScrollDown cooldown-ms=200 { move-workspace-down; }
-    Mod+Ctrl+WheelScrollUp cooldown-ms=200 { move-workspace-up; }
+    Mod+Ctrl+Shift+WheelScrollDown cooldown-ms=200 { move-workspace-down; }
+    Mod+Ctrl+Shift+WheelScrollUp cooldown-ms=200 { move-workspace-up; }
     Mod+Ctrl+1 { move-workspace-to-index 1; }
     Mod+Ctrl+2 { move-workspace-to-index 2; }
     Mod+Ctrl+3 { move-workspace-to-index 3; }
