@@ -405,8 +405,8 @@ binds {
     Mod+Ctrl+L { consume-or-expel-window-right; }
     Mod+Ctrl+Home { move-column-to-first; }
     Mod+Ctrl+End { move-column-to-last; }
-    Mod+Ctrl+WheelScrollDown { move-column-right; }
-    Mod+Ctrl+WheelScrollUp { move-column-left; }
+    Mod+Ctrl+WheelScrollDown cooldown-ms=200 { move-column-right; }
+    Mod+Ctrl+WheelScrollUp cooldown-ms=200 { move-column-left; }
 
 
     // ------------------------------------
