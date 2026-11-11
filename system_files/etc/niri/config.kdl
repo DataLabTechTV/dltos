@@ -333,7 +333,7 @@ binds {
     Mod+N repeat=false { spawn "noctalia" "msg" "panel-toggle" "control-center" "notifications"; }
     Mod+Ctrl+V repeat=false { spawn "noctalia" "msg" "panel-toggle" "control-center" "audio"; }
     Mod+Period repeat=false { spawn "noctalia" "msg" "panel-toggle" "launcher" "/emo "; }
-    // Mod+Shift+Period repeat=false { spawn "qs" "-c" "noctalia-shell" "ipc" "call" "plugin:unicode" "toggle"; }
+    Mod+Shift+Period repeat=false { spawn "noctalia" "msg" "panel-toggle" "launcher" "/uni"; }
 
     // --- Apps ---
     Mod+Return cooldown-ms=500 { spawn "kitty" "-d" "~"; }
