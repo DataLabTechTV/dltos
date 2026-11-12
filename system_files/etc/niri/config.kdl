@@ -61,6 +61,13 @@ recent-windows {
     highlight {
         corner-radius 16
     }
+
+    binds {
+        Alt+Tab { next-window; }
+        Alt+Shift+Tab { previous-window; }
+        Alt+Backslash { next-window filter="app-id"; }
+        Alt+Shift+Backslash { previous-window filter="app-id"; }
+    }
 }
 
 gestures {
