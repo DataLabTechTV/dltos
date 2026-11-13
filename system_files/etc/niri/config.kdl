@@ -412,8 +412,8 @@ binds {
     Mod+Ctrl+L { consume-or-expel-window-right; }
     Mod+Ctrl+Home { move-column-to-first; }
     Mod+Ctrl+End { move-column-to-last; }
-    Mod+Ctrl+Shift+WheelScrollDown cooldown-ms=100 { move-column-right; }
-    Mod+Ctrl+Shift+WheelScrollUp cooldown-ms=100 { move-column-left; }
+    Mod+Ctrl+Shift+WheelScrollDown cooldown-ms=200 { move-column-right; }
+    Mod+Ctrl+Shift+WheelScrollUp cooldown-ms=200 { move-column-left; }
 
 
     // ------------------------------------
@@ -425,8 +425,8 @@ binds {
     Mod+Page_Up { focus-workspace-up; }
     Mod+U { focus-workspace-down; }
     Mod+I { focus-workspace-up; }
-    Mod+WheelScrollDown cooldown-ms=100 { focus-workspace-down; }
-    Mod+WheelScrollUp cooldown-ms=100 { focus-workspace-up; }
+    Mod+WheelScrollDown cooldown-ms=200 { focus-workspace-down; }
+    Mod+WheelScrollUp cooldown-ms=200 { focus-workspace-up; }
     Mod+1 { focus-workspace 1; }
     Mod+2 { focus-workspace 2; }
     Mod+3 { focus-workspace 3; }
@@ -442,8 +442,8 @@ binds {
     Mod+Ctrl+Page_Up { move-workspace-up; }
     Mod+Ctrl+U { move-workspace-down; }
     Mod+Ctrl+I { move-workspace-up; }
-    Mod+Ctrl+WheelScrollDown cooldown-ms=100 { move-workspace-down; }
-    Mod+Ctrl+WheelScrollUp cooldown-ms=100 { move-workspace-up; }
+    Mod+Ctrl+WheelScrollDown cooldown-ms=200 { move-workspace-down; }
+    Mod+Ctrl+WheelScrollUp cooldown-ms=200 { move-workspace-up; }
     Mod+Ctrl+1 { move-workspace-to-index 1; }
     Mod+Ctrl+2 { move-workspace-to-index 2; }
     Mod+Ctrl+3 { move-workspace-to-index 3; }
