@@ -55,8 +55,12 @@ install_mail_tools() {
 install_graphics_tools() {
     dnf5 -y install ImageMagick ImageMagick-heic chafa
     dnf5 -y --enable-repo=fedora-multimedia install libheif libde265
+
     uv python install 3.13.12
     uv tool install --python 3.13.12 rembg[gpu,cli]
+
+    curl -L https://github.com/grigio/obs-cmd/releases/download/v1.0.3/obs-cmd-x64-linux.tar.gz | \
+        tar xz -C /usr/bin obs-cmd && chmod +x /usr/bin/obs-cmd
 }
 
 install_doc_tools() {
@@ -66,7 +70,8 @@ install_doc_tools() {
 }
 
 install_container_tools() {
-    dnf5 -y install docker-cli docker-compose-switch oci-seccomp-bpf-hook cosign image-builder
+    dnf5 -y install docker-cli docker-compose-switch oci-seccomp-bpf-hook cosign \
+        image-builder
     mv /usr/bin/docker /usr/bin/docker.real
     mv /usr/bin/docker-compose /usr/bin/docker-compose.real
 
