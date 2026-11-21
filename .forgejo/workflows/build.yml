@@ -29,9 +29,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - name: Dump forgejo context
-        run: echo '${{ toJSON(forgejo) }}'
-
       - name: Install just
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh |
@@ -113,7 +110,7 @@ jobs:
       # These `if` statements are so that pull requests for your custom images do not make it publish any packages under your name without you knowing
       # They also check if the runner is on the default branch so that things like the merge queue (if you enable it), are going to work
       - name: Login to Forgejo Container Registry
-        if: ${{ forgejo.event_name != 'pull_request' && forgejo.ref_name == 'main' }}
+        if: forgejo.event_name != 'pull_request' && forgejo.ref == format('refs/heads/{0}', forgejo.event.repository.default_branch)
         env:
           REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
         run: |
@@ -127,7 +124,7 @@ jobs:
           echo "REGISTRY_AUTH_FILE=${authfile}" >> "$GITHUB_ENV"
 
       - name: Push to Forgejo Container Registry
-        if: ${{ forgejo.event_name != 'pull_request' && forgejo.ref_name == 'main' }}
+        if: forgejo.event_name != 'pull_request' && forgejo.ref == format('refs/heads/{0}', forgejo.event.repository.default_branch)
         id: push-image
         env:
           ALIAS_TAGS: ${{ steps.gen-build-tags.outputs.alias_tags }}
@@ -147,14 +144,14 @@ jobs:
       # to consume. For more details, review the image signing section of the README.
       - name: Install Cosign
         uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
-        if: ${{ forgejo.event_name != 'pull_request' && forgejo.ref_name == 'main' }}
+        if: forgejo.event_name != 'pull_request' && forgejo.ref == format('refs/heads/{0}', forgejo.event.repository.default_branch)
         with:
           # be careful when upgrading major versions
           cosign-release: 'v3.1.2'
 
       - name: Sign container image
         id: sign-image
-        if: ${{ forgejo.event_name != 'pull_request' && forgejo.ref_name == 'main' }}
+        if: forgejo.event_name != 'pull_request' && forgejo.ref == format('refs/heads/{0}', forgejo.event.repository.default_branch)
         env:
           COSIGN_EXPERIMENTAL: false
           COSIGN_PASSWORD: ""
